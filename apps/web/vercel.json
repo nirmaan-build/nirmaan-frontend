@@ -1,5 +1,6 @@
 {
-  "installCommand": "cd ../.. && pnpm install",
+  "regions": ["sin1"],
+  "installCommand": "cd ../.. && pnpm install --network-timeout 300000",
   "buildCommand": "cd ../.. && pnpm --filter @nirmaan/web build",
   "outputDirectory": ".next",
   "framework": "nextjs"
