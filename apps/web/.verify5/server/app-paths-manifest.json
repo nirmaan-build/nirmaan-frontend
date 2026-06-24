@@ -1,0 +1,17 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/login/page": "app/login/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/requirements/page": "app/requirements/page.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/rfq/new/page": "app/rfq/new/page.js",
+  "/popular/page": "app/popular/page.js",
+  "/help/page": "app/help/page.js",
+  "/categories/[slug]/page": "app/categories/[slug]/page.js",
+  "/truck/page": "app/truck/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/rfq/[id]/page": "app/rfq/[id]/page.js",
+  "/page": "app/page.js",
+  "/categories/page": "app/categories/page.js",
+  "/terms/page": "app/terms/page.js"
+}

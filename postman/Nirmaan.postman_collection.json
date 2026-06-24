@@ -1,0 +1,1113 @@
+{
+  "info": {
+    "_postman_id": "b1f7a2c0-1a2b-4c3d-9e10-n1rmaa0stage1",
+    "name": "Nirmaan API",
+    "description": "Nirmaan backend API collection. Auto-generated and kept in sync with the NestJS backend (apps/backend).\n\n## Import\nImport this file in Postman (Import > File), then ALSO import `Nirmaan.dev.postman_environment.json` and select the \"Nirmaan - Local Dev\" environment. Collection variables provide fallback defaults, but the test scripts write tokens to the ENVIRONMENT, so it must be selected.\n\n## Auto-saved variables\nTokens are captured automatically by request test scripts into the active ENVIRONMENT, so you almost never copy/paste:\n- `Auth / Verify OTP` and `Auth / Google Login` save `accessToken`, `refreshToken`, `userId`.\n- `Auth / Refresh Access Token` updates `accessToken`.\n- `Auth / Logout` clears `accessToken` + `refreshToken`.\n\nEvery protected request uses collection-level Bearer auth `{{accessToken}}`, so once you verify an OTP, the rest just work.\n\n## Typical flow\n1. `Auth / Request OTP` (read the 6-digit code from the backend server log).\n2. Set `otpCode` (environment variable) to that code.\n3. `Auth / Verify OTP` -> tokens saved automatically.\n4. `Users / Update Me (Onboarding)` -> sets name + pincode, flips profileComplete.\n5. `Users / Get Me`, `Areas / *`, etc.\n\nVersion: Stage 1 (Auth, Users, Areas).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Request OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('returns expiresInSec', () => pm.expect(res).to.have.property('expiresInSec'));",
+                  "console.log('OTP requested for', pm.environment.get('otpEmail'), '- read the 6-digit code from the backend server log, then set the otpCode variable.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otpEmail}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/otp/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "otp", "request"]
+            },
+            "description": "POST /auth/otp/request -> { success, expiresInSec }. Rate limit: 3/hour per email. The code is logged by the dev server (email delivery not wired yet)."
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "  pm.environment.set('accessToken', res.accessToken);",
+                  "  pm.environment.set('refreshToken', res.refreshToken);",
+                  "  console.log('Saved accessToken + refreshToken.');",
+                  "}",
+                  "if (res.user && res.user.id) pm.environment.set('userId', res.user.id);",
+                  "pm.test('returns a JWT', () => pm.expect(res).to.have.property('accessToken'));",
+                  "console.log('isNewUser:', res.isNewUser, '| profileComplete:', res.user && res.user.profileComplete);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otpEmail}}\",\n  \"code\": \"{{otpCode}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/otp/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "otp", "verify"]
+            },
+            "description": "POST /auth/otp/verify -> { accessToken, refreshToken, user, isNewUser }. Set otpCode to the code from the server log first."
+          }
+        },
+        {
+          "name": "Google Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (pm.response.code === 200 && res.accessToken) {",
+                  "  pm.environment.set('accessToken', res.accessToken);",
+                  "  pm.environment.set('refreshToken', res.refreshToken);",
+                  "  if (res.user && res.user.id) pm.environment.set('userId', res.user.id);",
+                  "  console.log('Saved tokens from Google login. isNewUser:', res.isNewUser);",
+                  "} else {",
+                  "  console.log('Google login response:', res.error || res.message || pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{googleIdToken}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "POST /auth/google -> same shape as OTP verify. Returns 500 GOOGLE_NOT_CONFIGURED until GOOGLE_CLIENT_ID is set in the backend .env. Put a real Google ID token in the googleIdToken variable."
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "  pm.environment.set('accessToken', res.accessToken);",
+                  "  console.log('Refreshed accessToken.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "POST /auth/refresh -> { accessToken }. Uses the saved refreshToken."
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.environment.set('accessToken', '');",
+                  "pm.environment.set('refreshToken', '');",
+                  "console.log('Cleared accessToken + refreshToken.');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "POST /auth/logout -> { success }. Requires Bearer token (inherited). Revokes the stored refresh token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set('userId', res.id);",
+                  "console.log('profileComplete:', res.profileComplete, '| area:', res.primaryPincode);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "GET /users/me -> profile + role flags. Requires Bearer token (inherited)."
+          }
+        },
+        {
+          "name": "Update Me (Onboarding)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "console.log('profileComplete now:', res.profileComplete);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{fullName}}\",\n  \"primaryPincode\": \"{{pincode}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "PATCH /users/me -> updates name / pincode / isSupplier. Sets profileComplete=true once name + active pincode are present. Pincode must be active or you get 400 AREA_NOT_SERVICEABLE."
+          }
+        },
+        {
+          "name": "Become a Supplier (toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isSupplier\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "PATCH /users/me with isSupplier=true. Stage 1 only flips the flag; the full SupplierProfile (business name, GST) is Stage 2."
+          }
+        },
+        {
+          "name": "Switch Area",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pincode\": \"{{altPincode}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/area",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "area"]
+            },
+            "description": "PATCH /users/me/area -> dedicated area switch. Pincode must be active."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Areas",
+      "item": [
+        {
+          "name": "Check Area",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "console.log('servicable:', res.servicable, '|', res.city, res.state);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/areas/check?pincode={{pincode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["areas", "check"],
+              "query": [{ "key": "pincode", "value": "{{pincode}}" }]
+            },
+            "description": "GET /areas/check?pincode= -> { servicable, city, state }. Public (no token). NOTE: field is 'servicable' (sic), matching PRD-01 §5 verbatim."
+          }
+        },
+        {
+          "name": "Active Areas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/areas/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["areas", "active"]
+            },
+            "description": "GET /areas/active -> list of active pincodes. Requires Bearer token (inherited)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "List Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length) {",
+                  "  pm.environment.set('categoryId', res[0].id);",
+                  "  console.log('Saved categoryId =', res[0].id, '(' + res[0].name + ')');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories?locale=en",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"],
+              "query": [{ "key": "locale", "value": "en", "description": "omit to use your profile locale" }]
+            },
+            "description": "GET /categories?locale= -> localized list (sort_order). Saves the first category id."
+          }
+        },
+        {
+          "name": "Search Suggest (max 4)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('at most 4 suggestions', () => pm.expect(res.suggestions.length).to.be.at.most(4));",
+                  "console.log('suggestions:', JSON.stringify(res.suggestions.map(s => s.type + ':' + s.label)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/search/suggest?q={{searchQuery}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["search", "suggest"],
+              "query": [
+                { "key": "q", "value": "{{searchQuery}}" },
+                { "key": "pincode", "value": "{{pincode}}", "disabled": true },
+                { "key": "locale", "value": "hi", "disabled": true }
+              ]
+            },
+            "description": "GET /search/suggest -> { suggestions } (exactly 4 by default, env-configurable). pincode/locale default to your profile."
+          }
+        },
+        {
+          "name": "Catalog Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalog?category={{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["catalog"],
+              "query": [
+                { "key": "category", "value": "{{categoryId}}" },
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "pincode", "value": "{{pincode}}", "disabled": true },
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "limit", "value": "20", "disabled": true }
+              ]
+            },
+            "description": "GET /catalog -> paginated, filtered by your serviceable area."
+          }
+        },
+        {
+          "name": "Catalog Item Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/catalog/{{catalogItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["catalog", "{{catalogItemId}}"]
+            },
+            "description": "GET /catalog/:id -> item detail."
+          }
+        },
+        {
+          "name": "Supplier: Create Catalog Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('catalogItemId', res.id); console.log('Saved catalogItemId =', res.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"title\": \"OPC 53 Grade Cement\",\n  \"unit\": \"bag\",\n  \"priceEstimate\": 390,\n  \"imageUrls\": []\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/supplier/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["supplier", "catalog"]
+            },
+            "description": "POST /supplier/catalog (is_supplier). Requires a SUPPLIER token + an existing SupplierProfile. Saves catalogItemId."
+          }
+        },
+        {
+          "name": "Supplier: Update Catalog Item",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priceEstimate\": 405\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/supplier/catalog/{{catalogItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["supplier", "catalog", "{{catalogItemId}}"]
+            },
+            "description": "PATCH /supplier/catalog/:id (is_supplier, owner only)."
+          }
+        },
+        {
+          "name": "Supplier: Delete Catalog Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/supplier/catalog/{{catalogItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["supplier", "catalog", "{{catalogItemId}}"]
+            },
+            "description": "DELETE /supplier/catalog/:id (is_supplier, owner only)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "RFQ (Post Requirement)",
+      "item": [
+        {
+          "name": "Create RFQ (triggers matching)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201/200', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const res = pm.response.json();",
+                  "if (res.id) pm.environment.set('rfqId', res.id);",
+                  "console.log('RFQ status:', res.status, '| leads:', (res.leads || []).length);",
+                  "if (res.leads && res.leads.length) {",
+                  "  pm.environment.set('leadId', res.leads[0].id);",
+                  "  console.log('Saved leadId =', res.leads[0].id, '(a Lead was auto-created -> matching works)');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"pincode\": \"{{pincode}}\",\n  \"description\": \"Need 200 bags OPC cement for a slab pour next week\",\n  \"quantity\": 200,\n  \"unit\": \"bag\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rfqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["rfqs"]
+            },
+            "description": "POST /rfqs -> creates the RFQ and runs synchronous matching (Lead per matching supplier). Saves rfqId + first leadId."
+          }
+        },
+        {
+          "name": "List My RFQs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rfqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["rfqs"],
+              "query": [{ "key": "status", "value": "MATCHED", "disabled": true }]
+            },
+            "description": "GET /rfqs?status= -> buyer's own RFQs."
+          }
+        },
+        {
+          "name": "RFQ Detail (+ leads/quotes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "console.log('RFQ', res.status, '| leads:', (res.leads||[]).length);",
+                  "if (res.leads && res.leads.length) pm.environment.set('leadId', res.leads[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rfqs/{{rfqId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rfqs", "{{rfqId}}"]
+            },
+            "description": "GET /rfqs/:id -> detail incl. leads + quotes. Confirms Lead creation (Stage 2 done check)."
+          }
+        },
+        {
+          "name": "Update / Cancel RFQ",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated: 220 bags now\",\n  \"quantity\": 220\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rfqs/{{rfqId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rfqs", "{{rfqId}}"]
+            },
+            "description": "PATCH /rfqs/:id -> edit while open; send {\"cancel\": true} to cancel."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leads (Supplier)",
+      "item": [
+        {
+          "name": "List Leads",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length) { pm.environment.set('leadId', res[0].id); console.log('Saved leadId =', res[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leads",
+              "host": ["{{baseUrl}}"],
+              "path": ["leads"],
+              "query": [{ "key": "status", "value": "PENDING", "disabled": true }]
+            },
+            "description": "GET /leads?status= -> supplier's incoming leads. Needs a SUPPLIER token."
+          }
+        },
+        {
+          "name": "Lead Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{leadId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["leads", "{{leadId}}"]
+            },
+            "description": "GET /leads/:id -> detail. Buyer contact appears only once you've quoted."
+          }
+        },
+        {
+          "name": "Mark Lead Viewed",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{leadId}}/view",
+              "host": ["{{baseUrl}}"],
+              "path": ["leads", "{{leadId}}", "view"]
+            },
+            "description": "PATCH /leads/:id/view -> status PENDING -> VIEWED."
+          }
+        },
+        {
+          "name": "Decline Lead",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{leadId}}/decline",
+              "host": ["{{baseUrl}}"],
+              "path": ["leads", "{{leadId}}", "decline"]
+            },
+            "description": "PATCH /leads/:id/decline -> status DECLINED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotes",
+      "item": [
+        {
+          "name": "Submit Quote (Supplier)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('quoteId', res.id); console.log('Saved quoteId =', res.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 385,\n  \"notes\": \"Ex-warehouse, delivery extra\",\n  \"validUntil\": \"2026-07-31\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{leadId}}/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["leads", "{{leadId}}", "quotes"]
+            },
+            "description": "POST /leads/:id/quotes (is_supplier). Lead -> QUOTED, notifies buyer. Saves quoteId."
+          }
+        },
+        {
+          "name": "Accept Quote (Buyer)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quotes/{{quoteId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["quotes", "{{quoteId}}", "accept"]
+            },
+            "description": "PATCH /quotes/:id/accept -> buyer accepts (use the BUYER token)."
+          }
+        },
+        {
+          "name": "Reject Quote (Buyer)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quotes/{{quoteId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["quotes", "{{quoteId}}", "reject"]
+            },
+            "description": "PATCH /quotes/:id/reject -> buyer rejects (use the BUYER token)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart (My Truck)",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart"]
+            },
+            "description": "GET /cart -> items + total_item_count + total_estimated_value."
+          }
+        },
+        {
+          "name": "Add to Truck",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('cartItemId', res.id); console.log('Saved cartItemId =', res.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"catalogItemId\": \"{{catalogItemId}}\",\n  \"quantity\": 10\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart"]
+            },
+            "description": "POST /cart -> add item (increments if already present). Saves cartItemId."
+          }
+        },
+        {
+          "name": "Update Truck Item Qty",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 25\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{cartItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{cartItemId}}"]
+            },
+            "description": "PATCH /cart/:itemId -> set quantity."
+          }
+        },
+        {
+          "name": "Remove Truck Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{cartItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{cartItemId}}"]
+            },
+            "description": "DELETE /cart/:itemId -> remove."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Stage 3 thin admin (PRD-04 §4.4, §4.5). These requests use the separate {{adminToken}}, not the user accessToken. Run 'Admin Login' first.",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) { pm.environment.set('adminToken', res.accessToken); console.log('Saved adminToken for', res.email); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auth", "login"]
+            },
+            "description": "POST /admin/auth/login -> { accessToken, email }. Email must be in ADMIN_EMAILS allowlist."
+          }
+        },
+        {
+          "name": "List Categories (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length) pm.environment.set('categoryId', res[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/categories", "host": ["{{baseUrl}}"], "path": ["admin", "categories"] },
+            "description": "GET /admin/categories -> list incl. translations."
+          }
+        },
+        {
+          "name": "Create Category (EN + HI)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const res = pm.response.json();",
+                  "if (res.id) { pm.environment.set('categoryId', res.id); console.log('Saved categoryId =', res.id, '| hi:', (res.translations||[]).map(t=>t.locale+':'+t.name).join(',')); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cement\",\n  \"sortOrder\": 1,\n  \"translations\": [\n    { \"locale\": \"hi\", \"name\": \"सीमेंट\" }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/admin/categories", "host": ["{{baseUrl}}"], "path": ["admin", "categories"] },
+            "description": "POST /admin/categories -> creates category + Hindi translation. Saves categoryId."
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cement & Concrete\",\n  \"translations\": [\n    { \"locale\": \"hi\", \"name\": \"सीमेंट और कंक्रीट\" }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/admin/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["admin", "categories", "{{categoryId}}"] },
+            "description": "PATCH /admin/categories/:id -> update fields; upserts the given locale rows."
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["admin", "categories", "{{categoryId}}"] },
+            "description": "DELETE /admin/categories/:id -> blocked (400 CATEGORY_IN_USE) if referenced."
+          }
+        },
+        {
+          "name": "List Areas (admin)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/areas", "host": ["{{baseUrl}}"], "path": ["admin", "areas"] },
+            "description": "GET /admin/areas -> all pincodes (active + inactive)."
+          }
+        },
+        {
+          "name": "Add Pincode",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pincode\": \"{{newPincode}}\",\n  \"city\": \"{{newCity}}\",\n  \"state\": \"Uttarakhand\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/admin/areas", "host": ["{{baseUrl}}"], "path": ["admin", "areas"] },
+            "description": "POST /admin/areas -> adds pincode (inactive by default)."
+          }
+        },
+        {
+          "name": "Activate Pincode",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/areas/{{newPincode}}/activate", "host": ["{{baseUrl}}"], "path": ["admin", "areas", "{{newPincode}}", "activate"] },
+            "description": "PATCH /admin/areas/:pincode/activate -> isActive=true."
+          }
+        },
+        {
+          "name": "Deactivate Pincode",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/areas/{{newPincode}}/deactivate", "host": ["{{baseUrl}}"], "path": ["admin", "areas", "{{newPincode}}", "deactivate"] },
+            "description": "PATCH /admin/areas/:pincode/deactivate -> isActive=false."
+          }
+        },
+        {
+          "name": "List Suppliers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length) pm.environment.set('supplierId', res[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/suppliers", "host": ["{{baseUrl}}"], "path": ["admin", "suppliers"] },
+            "description": "GET /admin/suppliers -> list incl. user, areas, categories, status."
+          }
+        },
+        {
+          "name": "Verify Supplier",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/suppliers/{{supplierId}}/verify", "host": ["{{baseUrl}}"], "path": ["admin", "suppliers", "{{supplierId}}", "verify"] },
+            "description": "PATCH /admin/suppliers/:id/verify -> isVerified=true, status VERIFIED."
+          }
+        },
+        {
+          "name": "Suspend Supplier",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/suppliers/{{supplierId}}/suspend", "host": ["{{baseUrl}}"], "path": ["admin", "suppliers", "{{supplierId}}", "suspend"] },
+            "description": "PATCH /admin/suppliers/:id/suspend -> status SUSPENDED (excluded from matching)."
+          }
+        },
+        {
+          "name": "Set Supplier Service Areas",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"pincodes\": [\"248001\", \"249401\"]\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/admin/suppliers/{{supplierId}}/areas", "host": ["{{baseUrl}}"], "path": ["admin", "suppliers", "{{supplierId}}", "areas"] },
+            "description": "PUT /admin/suppliers/:id/areas -> replace serviced pincodes."
+          }
+        },
+        {
+          "name": "Set Supplier Categories",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"categoryIds\": [\"{{categoryId}}\"]\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/admin/suppliers/{{supplierId}}/categories", "host": ["{{baseUrl}}"], "path": ["admin", "suppliers", "{{supplierId}}", "categories"] },
+            "description": "PUT /admin/suppliers/:id/categories -> replace listed categories."
+          }
+        },
+        {
+          "name": "List Catalog (moderation)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (Array.isArray(res) && res.length) pm.environment.set('catalogItemId', res[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/catalog",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "catalog"],
+              "query": [
+                { "key": "category", "value": "{{categoryId}}", "disabled": true },
+                { "key": "active", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "GET /admin/catalog -> all listings (filter by category/supplier/active)."
+          }
+        },
+        {
+          "name": "Deactivate Listing",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/catalog/{{catalogItemId}}/deactivate", "host": ["{{baseUrl}}"], "path": ["admin", "catalog", "{{catalogItemId}}", "deactivate"] },
+            "description": "PATCH /admin/catalog/:id/deactivate -> isActive=false (bad photo/price/spam)."
+          }
+        },
+        {
+          "name": "Activate Listing",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/catalog/{{catalogItemId}}/activate", "host": ["{{baseUrl}}"], "path": ["admin", "catalog", "{{catalogItemId}}", "activate"] },
+            "description": "PATCH /admin/catalog/:id/activate -> isActive=true."
+          }
+        },
+        {
+          "name": "Send Broadcast",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"message\": \"We've opened in Almora!\",\n  \"segment\": \"all_users\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{baseUrl}}/admin/broadcast", "host": ["{{baseUrl}}"], "path": ["admin", "broadcast"] },
+            "description": "POST /admin/broadcast -> { sent }. segment: all_users | buyers | suppliers (+ optional pincode)."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string" },
+    { "key": "otpEmail", "value": "test@example.com", "type": "string" },
+    { "key": "otpCode", "value": "", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "fullName", "value": "Test Contractor", "type": "string" },
+    { "key": "pincode", "value": "248001", "type": "string" },
+    { "key": "altPincode", "value": "249401", "type": "string" },
+    { "key": "googleIdToken", "value": "", "type": "string" },
+    { "key": "supplierEmail", "value": "supplier@example.com", "type": "string" },
+    { "key": "searchQuery", "value": "ce", "type": "string" },
+    { "key": "categoryId", "value": "", "type": "string" },
+    { "key": "catalogItemId", "value": "", "type": "string" },
+    { "key": "rfqId", "value": "", "type": "string" },
+    { "key": "leadId", "value": "", "type": "string" },
+    { "key": "quoteId", "value": "", "type": "string" },
+    { "key": "cartItemId", "value": "", "type": "string" },
+    { "key": "adminEmail", "value": "sourabhbhatt.77@gmail.com", "type": "string" },
+    { "key": "adminPassword", "value": "nirmaan-admin-dev", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "newPincode", "value": "263601", "type": "string" },
+    { "key": "newCity", "value": "Almora", "type": "string" },
+    { "key": "supplierId", "value": "33333333-3333-3333-3333-333333333333", "type": "string" }
+  ]
+}

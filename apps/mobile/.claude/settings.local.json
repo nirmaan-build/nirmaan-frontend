@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /Users/sourabhbhatt/playground/Nirmaan/apps/mobile/node_modules/react-native-svg/package.json | grep '\"version\"'; echo \"---root---\"; cat /Users/sourabhbhatt/playground/Nirmaan/node_modules/react-native-svg/package.json 2>/dev/null | grep '\"version\"'; echo \"---rn installed---\"; cat /Users/sourabhbhatt/playground/Nirmaan/apps/mobile/node_modules/react-native/package.json 2>/dev/null | grep '\"version\"')",
+      "Read(//Users/sourabhbhatt/playground/Nirmaan/node_modules/react-native-svg/**)",
+      "Bash(yarn android *)"
+    ]
+  }
+}

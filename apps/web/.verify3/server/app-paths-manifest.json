@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/login/page": "app/login/page.js",
+  "/rfq/[id]/page": "app/rfq/[id]/page.js",
+  "/rfq/new/page": "app/rfq/new/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/truck/page": "app/truck/page.js",
+  "/page": "app/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/categories/page": "app/categories/page.js",
+  "/help/page": "app/help/page.js",
+  "/categories/[slug]/page": "app/categories/[slug]/page.js",
+  "/terms/page": "app/terms/page.js"
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@nirmaan/shared": ["../../packages/shared/index.ts"]
+    },
+    "resolveJsonModule": true,
+    "strict": true
+  },
+  "include": ["src", "App.tsx", "index.js"]
+}

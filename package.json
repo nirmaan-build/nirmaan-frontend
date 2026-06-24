@@ -1,0 +1,18 @@
+{
+  "name": "nirmaan",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "dev:web": "turbo dev --filter=@nirmaan/web",
+    "dev:admin": "turbo dev --filter=@nirmaan/admin",
+    "dev:mobile": "turbo dev --filter=@nirmaan/mobile"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  }
+}

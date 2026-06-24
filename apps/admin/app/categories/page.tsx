@@ -1,0 +1,304 @@
+'use client';
+
+import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Plus, Pencil, Trash2, FolderTree } from 'lucide-react';
+import { api, ApiError, getToken } from '@/lib/api';
+import { Modal } from '../components/Modal';
+
+interface Translation {
+  locale: string;
+  name: string;
+}
+interface Category {
+  id: string;
+  name: string;
+  sortOrder: number;
+  iconUrl: string | null;
+  coverImageUrl: string | null;
+  translations: Translation[];
+}
+
+function hindi(cat: Category): string {
+  return cat.translations.find((t) => t.locale === 'hi')?.name ?? '';
+}
+
+export default function CategoriesPage() {
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [name, setName] = useState('');
+  const [hindiName, setHindiName] = useState('');
+  const [sortOrder, setSortOrder] = useState('0');
+  const [iconUrl, setIconUrl] = useState('');
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  // edit modal state
+  const [editing, setEditing] = useState<Category | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editHindi, setEditHindi] = useState('');
+  const [editSort, setEditSort] = useState('0');
+  const [editIcon, setEditIcon] = useState('');
+  const [editCover, setEditCover] = useState('');
+  const [editBusy, setEditBusy] = useState(false);
+
+  const handleError = useCallback(
+    (err: unknown) => {
+      if (err instanceof ApiError && err.status === 401) {
+        router.push('/login');
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
+    },
+    [router],
+  );
+
+  const load = useCallback(async () => {
+    try {
+      setCategories(await api<Category[]>('/admin/categories'));
+    } catch (err) {
+      handleError(err);
+    }
+  }, [handleError]);
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.push('/login');
+      return;
+    }
+    void load();
+  }, [router, load]);
+
+  async function onCreate(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api('/admin/categories', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          sortOrder: Number(sortOrder) || 0,
+          iconUrl: iconUrl.trim() || undefined,
+          coverImageUrl: coverImageUrl.trim() || undefined,
+          translations: hindiName.trim()
+            ? [{ locale: 'hi', name: hindiName.trim() }]
+            : [],
+        }),
+      });
+      setName('');
+      setHindiName('');
+      setSortOrder('0');
+      setIconUrl('');
+      setCoverImageUrl('');
+      toast.success('Category added');
+      await load();
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openEdit(cat: Category) {
+    setEditing(cat);
+    setEditName(cat.name);
+    setEditHindi(hindi(cat));
+    setEditSort(String(cat.sortOrder));
+    setEditIcon(cat.iconUrl ?? '');
+    setEditCover(cat.coverImageUrl ?? '');
+  }
+
+  async function onSaveEdit(e: FormEvent) {
+    e.preventDefault();
+    if (!editing) return;
+    setEditBusy(true);
+    try {
+      await api(`/admin/categories/${editing.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: editName.trim(),
+          sortOrder: Number(editSort) || 0,
+          iconUrl: editIcon.trim() || undefined,
+          coverImageUrl: editCover.trim() || undefined,
+          translations: editHindi.trim()
+            ? [{ locale: 'hi', name: editHindi.trim() }]
+            : [],
+        }),
+      });
+      toast.success('Category updated');
+      setEditing(null);
+      await load();
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
+  async function onDelete(cat: Category) {
+    if (!window.confirm(`Delete category "${cat.name}"?`)) return;
+    try {
+      await api(`/admin/categories/${cat.id}`, { method: 'DELETE' });
+      toast.success(`Deleted “${cat.name}”`);
+      await load();
+    } catch (err) {
+      handleError(err);
+    }
+  }
+
+  return (
+    <>
+      <div className="page-head">
+        <h1>Categories</h1>
+        <p className="subtitle">
+          The catalog tree buyers browse. Hindi names power the bilingual UI.
+        </p>
+      </div>
+
+      <div className="card">
+        <h2>Add a category</h2>
+        <form onSubmit={onCreate}>
+          <div className="row">
+            <div>
+              <label>Name (English)</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Cement"
+                required
+              />
+            </div>
+            <div>
+              <label>Name (Hindi)</label>
+              <input
+                value={hindiName}
+                onChange={(e) => setHindiName(e.target.value)}
+                placeholder="सीमेंट"
+              />
+            </div>
+            <div style={{ maxWidth: 130 }}>
+              <label>Sort order</label>
+              <input
+                type="number"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              />
+            </div>
+          </div>
+          <label>Icon URL (optional)</label>
+          <input
+            value={iconUrl}
+            onChange={(e) => setIconUrl(e.target.value)}
+            placeholder="https://…/cement-icon.png"
+          />
+          <label>Cover image URL (optional)</label>
+          <input
+            value={coverImageUrl}
+            onChange={(e) => setCoverImageUrl(e.target.value)}
+            placeholder="https://…/cement-cover.jpg"
+          />
+          <button className="primary mt" type="submit" disabled={busy}>
+            <Plus />
+            {busy ? 'Adding…' : 'Add category'}
+          </button>
+        </form>
+      </div>
+
+      <div className="card">
+        <h2>All categories</h2>
+        {categories.length === 0 ? (
+          <div className="empty">
+            <FolderTree />
+            <span>No categories yet. Add your first one above.</span>
+          </div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name (EN)</th>
+                  <th>Name (HI)</th>
+                  <th>Sort</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories.map((cat) => (
+                  <tr key={cat.id}>
+                    <td style={{ fontWeight: 550 }}>{cat.name}</td>
+                    <td>{hindi(cat) || <span className="muted">—</span>}</td>
+                    <td>{cat.sortOrder}</td>
+                    <td>
+                      <div className="actions" style={{ justifyContent: 'flex-end' }}>
+                        <button className="sm" onClick={() => openEdit(cat)}>
+                          <Pencil />
+                          Edit
+                        </button>
+                        <button
+                          className="danger sm"
+                          onClick={() => onDelete(cat)}
+                        >
+                          <Trash2 />
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        open={editing !== null}
+        title="Edit category"
+        onClose={() => setEditing(null)}
+      >
+        <form onSubmit={onSaveEdit}>
+          <label>Name (English)</label>
+          <input
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            required
+            autoFocus
+          />
+          <label>Name (Hindi)</label>
+          <input
+            value={editHindi}
+            onChange={(e) => setEditHindi(e.target.value)}
+            placeholder="सीमेंट"
+          />
+          <label>Sort order</label>
+          <input
+            type="number"
+            value={editSort}
+            onChange={(e) => setEditSort(e.target.value)}
+          />
+          <label>Icon URL (optional)</label>
+          <input
+            value={editIcon}
+            onChange={(e) => setEditIcon(e.target.value)}
+            placeholder="https://…/cement-icon.png"
+          />
+          <label>Cover image URL (optional)</label>
+          <input
+            value={editCover}
+            onChange={(e) => setEditCover(e.target.value)}
+            placeholder="https://…/cement-cover.jpg"
+          />
+          <div className="modal-foot">
+            <button type="button" onClick={() => setEditing(null)}>
+              Cancel
+            </button>
+            <button className="primary" type="submit" disabled={editBusy}>
+              {editBusy ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </>
+  );
+}

@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nirmaan — Product & Technology Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<style>
+/* ── reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:        #0f172a;
+  --ink2:       #334155;
+  --ink3:       #64748b;
+  --bg:         #f8fafc;
+  --surface:    #ffffff;
+  --border:     #e2e8f0;
+  --accent:     #4f46e5;
+  --accent2:    #6366f1;
+  --accent-bg:  #eef2ff;
+  --v2:         #16a34a;
+  --v2-bg:      #dcfce7;
+  --v2-border:  #86efac;
+  --warn:       #b45309;
+  --warn-bg:    #fffbeb;
+  --sidebar-w:  280px;
+  --header-h:   60px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+/* ── scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* ── top header ── */
+.top-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--accent);
+  display: flex; align-items: center; padding: 0 20px;
+  gap: 16px; box-shadow: 0 2px 12px rgba(79,70,229,.25);
+}
+.top-header .logo {
+  font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -.5px;
+  display: flex; align-items: center; gap: 8px;
+}
+.top-header .logo-dot { color: #a5b4fc; }
+.top-header .tagline {
+  font-size: .8rem; color: #c7d2fe; font-weight: 400; margin-left: 4px;
+  display: none;
+}
+@media(min-width:600px) { .top-header .tagline { display: inline; } }
+.top-header .badge {
+  margin-left: auto; background: rgba(255,255,255,.15);
+  color: #e0e7ff; font-size: .7rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px; letter-spacing: .3px;
+}
+.hamburger {
+  display: none; flex-direction: column; gap: 4px; cursor: pointer;
+  padding: 4px; margin-left: auto;
+}
+.hamburger span { width: 20px; height: 2px; background: #fff; border-radius: 1px; transition: .2s; }
+@media(max-width:768px) {
+  .hamburger { display: flex; }
+  .top-header .badge { display: none; }
+}
+
+/* ── layout ── */
+body { background: var(--bg); }
+.layout {
+  display: flex;
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+
+/* ── sidebar ── */
+.sidebar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 80;
+  transition: transform .25s ease;
+  display: flex; flex-direction: column;
+}
+@media(max-width:768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,.12); }
+}
+.sidebar-inner { padding: 16px 0 40px; }
+.sidebar-label {
+  font-size: .65rem; font-weight: 700; letter-spacing: 1.2px;
+  color: var(--ink3); text-transform: uppercase;
+  padding: 8px 20px 4px;
+}
+
+.nav-list { list-style: none; }
+.nav-item { position: relative; }
+.nav-link {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 20px;
+  text-decoration: none; color: var(--ink2);
+  transition: background .15s;
+  cursor: pointer; border-left: 3px solid transparent;
+}
+.nav-link:hover { background: var(--accent-bg); }
+.nav-item.active > .nav-link {
+  background: var(--accent-bg);
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+.nav-icon { font-size: 1.1rem; line-height: 1; margin-top: 1px; flex-shrink: 0; }
+.nav-text { display: flex; flex-direction: column; }
+.nav-label { font-size: .85rem; font-weight: 600; }
+.nav-desc { font-size: .72rem; color: var(--ink3); margin-top: 1px; }
+
+.subnav { list-style: none; margin: 0 0 4px 40px; }
+.subnav-link {
+  display: block; padding: 3px 12px;
+  font-size: .75rem; color: var(--ink3);
+  text-decoration: none; border-left: 2px solid var(--border);
+  transition: color .15s, border-color .15s;
+  line-height: 1.5;
+}
+.subnav-link:hover { color: var(--accent); border-color: var(--accent); }
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-size: .72rem; color: var(--ink3);
+  line-height: 1.5;
+}
+
+/* ── main content ── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+@media(max-width:768px) { .main { margin-left: 0; } }
+
+.prd-section {
+  display: none;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+  animation: fadeIn .25s ease;
+}
+.prd-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── progress bar ── */
+.reading-bar {
+  position: fixed; top: var(--header-h); left: var(--sidebar-w); right: 0;
+  height: 3px; background: var(--border); z-index: 90;
+}
+@media(max-width:768px) { .reading-bar { left: 0; } }
+.reading-bar-fill {
+  height: 100%; background: var(--accent2); width: 0%;
+  transition: width .1s;
+}
+
+/* ── typography ── */
+h1 {
+  font-size: 2rem; font-weight: 800; color: var(--accent);
+  margin: 0 0 6px; letter-spacing: -.5px; line-height: 1.2;
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--accent);
+}
+h2 {
+  font-size: 1.3rem; font-weight: 700; color: var(--ink);
+  margin: 36px 0 10px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+h3 {
+  font-size: 1.05rem; font-weight: 700; color: var(--accent);
+  margin: 28px 0 8px;
+}
+h4 {
+  font-size: .95rem; font-weight: 700; color: var(--ink2);
+  margin: 20px 0 6px;
+}
+p { margin: 0 0 14px; color: var(--ink2); }
+strong { color: var(--ink); font-weight: 700; }
+code {
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  font-size: .82em; background: #f1f5f9; color: #4338ca;
+  padding: 1px 5px; border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+hr {
+  border: none; border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+ul, ol {
+  padding-left: 24px;
+  margin: 0 0 14px;
+}
+li { margin-bottom: 4px; color: var(--ink2); }
+li.depth-1 { margin-left: 20px; }
+li.depth-2 { margin-left: 40px; }
+
+/* ── pre/code blocks ── */
+.code-block {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 16px 18px;
+  border-radius: 8px;
+  font-size: .78rem;
+  font-family: 'Fira Code', Consolas, monospace;
+  overflow-x: auto;
+  margin: 0 0 20px;
+  line-height: 1.6;
+  border-left: 4px solid var(--accent2);
+}
+.code-block code { background: none; color: inherit; padding: 0; border: none; font-size: inherit; }
+
+/* ── callout boxes ── */
+.callout {
+  background: var(--accent-bg);
+  border-left: 4px solid var(--accent);
+  padding: 14px 18px;
+  border-radius: 0 8px 8px 0;
+  margin: 0 0 20px;
+  font-size: .92rem; color: var(--ink2);
+  line-height: 1.65;
+}
+.callout-v2 {
+  background: var(--v2-bg);
+  border-left-color: var(--v2);
+  color: var(--ink);
+}
+.callout strong { color: var(--ink); }
+
+/* ── tables ── */
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+th {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: .82rem;
+  letter-spacing: .2px;
+}
+th strong { color: #fff; }
+td {
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--ink2);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #f8faff; }
+tr:hover td { background: var(--accent-bg); }
+
+/* ── diagrams ── */
+.diagram-wrap {
+  margin: 24px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 16px;
+  overflow-x: auto;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  display: flex;
+  justify-content: center;
+}
+.diagram-wrap .mermaid {
+  max-width: 100%;
+  font-family: 'Inter', Arial, sans-serif !important;
+}
+.mermaid svg { max-width: 100% !important; height: auto !important; }
+
+/* ── v2 inline badge ── */
+.v2-badge {
+  display: inline-block;
+  background: var(--v2-bg);
+  color: var(--v2);
+  font-size: .65rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--v2-border);
+  letter-spacing: .3px; vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* ── search bar ── */
+.search-wrap {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.search-input {
+  width: 100%; padding: 7px 32px 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: .82rem; color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  transition: border-color .15s;
+}
+.search-input:focus { border-color: var(--accent); background: #fff; }
+.search-clear {
+  position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+  font-size: .8rem; color: var(--ink3); cursor: pointer; display: none;
+}
+
+/* ── section tabs (mobile top) ── */
+.section-tabs {
+  display: none;
+}
+@media(max-width:768px) {
+  .section-tabs {
+    display: flex;
+    overflow-x: auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: var(--header-h); z-index: 70;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .section-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    font-size: .78rem; font-weight: 600;
+    color: var(--ink3);
+    background: none; border: none; cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+}
+
+/* ── back-to-top ── */
+.back-top {
+  position: fixed; bottom: 28px; right: 28px;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 3px 12px rgba(79,70,229,.4);
+  font-size: 1rem; transition: opacity .2s, transform .2s;
+  opacity: 0; pointer-events: none; z-index: 90;
+  border: none;
+}
+.back-top.visible { opacity: 1; pointer-events: all; }
+.back-top:hover { transform: translateY(-2px); }
+
+/* ── overlay (mobile sidebar backdrop) ── */
+.overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 75;
+  background: rgba(0,0,0,.4);
+}
+@media(max-width:768px) {
+  .overlay.open { display: block; }
+}
+
+/* ── print ── */
+@media print {
+  .sidebar, .top-header, .reading-bar, .back-top, .section-tabs { display: none !important; }
+  .main { margin-left: 0; }
+  .prd-section { display: block !important; page-break-before: always; }
+  .prd-section:first-child { page-break-before: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- top header -->
+<header class="top-header">
+  <div class="logo">🏗️ Nirmaan<span class="logo-dot">.</span>
+    <span class="tagline">Product &amp; Technology Guide</span>
+  </div>
+  <div class="badge">v1 core + v2.1 additions</div>
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- reading progress bar -->
+<div class="reading-bar"><div class="reading-bar-fill" id="readBar"></div></div>
+
+<!-- mobile overlay -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- layout -->
+<div class="layout">
+
+  <!-- sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" placeholder="Search docs…" oninput="doSearch(this.value)" autocomplete="off">
+      <span class="search-clear" id="searchClear" onclick="clearSearch()">✕</span>
+    </div>
+    <div class="sidebar-inner">
+      <div class="sidebar-label">Documents</div>
+      <ul class="nav-list">
+        <li class="nav-item" data-section="00-Nirmaan-Master-Overview">
+          <a href="#00-Nirmaan-Master-Overview" class="nav-link" onclick="activateSection('00-Nirmaan-Master-Overview',event)">
+            <span class="nav-icon">📋</span>
+            <div class="nav-text">
+              <span class="nav-label">Master Overview</span>
+              <span class="nav-desc">What it is, how it works, the data model</span>
+            </div>
+          </a>
+          <ul class="subnav"><li><a href="#how-to-read-this-document-00-Nirmaan-Master-Overview" class="subnav-link">How to read this document</a></li><li><a href="#1-what-is-nirmaan-in-one-paragraph-00-Nirmaan-Master-Overview" class="subnav-link">1. What is Nirmaan, in one paragraph?</a></li><li><a href="#2-the-three-kinds-of-people-who-use-nirmaan-00-Nirmaan-Master-Overview" class="subnav-link">2. The three kinds of people who use Nirmaan</a></li><li><a href="#3-the-core-idea-demand-engine-not-just-a-shop-00-Nirmaan-Master-Overview" class="subnav-link">3. The core idea: "demand engine," not just a shop</a></li><li><a href="#4-the-full-journey-end-to-end-00-Nirmaan-Master-Overview" class="subnav-link">4. The full journey, end to end</a></li><li><a href="#5-how-the-technology-is-arranged-the-boxes-diagram-00-Nirmaan-Master-Overview" class="subnav-link">5. How the technology is arranged (the "boxes" diagram)</a></li><li><a href="#6-the-data-model--the-nouns-of-the-business-00-Nirmaan-Master-Overview" class="subnav-link">6. The data model — the "nouns" of the business</a></li><li><a href="#7-the-two-big-cross-cutting-ideas-00-Nirmaan-Master-Overview" class="subnav-link">7. The two big "cross-cutting" ideas</a></li><li><a href="#8-how-we-make-money--00-Nirmaan-Master-Overview" class="subnav-link">8. How we make money 🆕</a></li><li><a href="#9-what-we-deliberately-did-not-build-00-Nirmaan-Master-Overview" class="subnav-link">9. What we deliberately did NOT build</a></li><li><a href="#10-where-the-project-stands-today-00-Nirmaan-Master-Overview" class="subnav-link">10. Where the project stands today</a></li><li><a href="#11-glossary--every-term-in-one-place-00-Nirmaan-Master-Overview" class="subnav-link">11. Glossary — every term in one place</a></li></ul>
+        </li>
+        <li class="nav-item" data-section="01-Backend-PRD">
+          <a href="#01-Backend-PRD" class="nav-link" onclick="activateSection('01-Backend-PRD',event)">
+            <span class="nav-icon">⚙️</span>
+            <div class="nav-text">
+              <span class="nav-label">Backend</span>
+              <span class="nav-desc">The brain every app talks to</span>
+            </div>
+          </a>
+          <ul class="subnav"><li><a href="#1-what-the-backend-is-and-why-it-exists-01-Backend-PRD" class="subnav-link">1. What the backend is and why it exists</a></li><li><a href="#2-logging-in-the-auth-module-01-Backend-PRD" class="subnav-link">2. Logging in (the Auth module)</a></li><li><a href="#3-profiles-and-areas-users--areas-modules-01-Backend-PRD" class="subnav-link">3. Profiles and areas (Users & Areas modules)</a></li><li><a href="#4-the-catalog-browse--search-01-Backend-PRD" class="subnav-link">4. The catalog (browse & search)</a></li><li><a href="#5-the-demand-engine-requirements-leads-quotes-01-Backend-PRD" class="subnav-link">5. The demand engine (Requirements, Leads, Quotes)</a></li><li><a href="#6-my-truck-the-cart-01-Backend-PRD" class="subnav-link">6. My Truck (the cart)</a></li><li><a href="#7-chat-and-notifications-01-Backend-PRD" class="subnav-link">7. Chat and notifications</a></li><li><a href="#8--v21--orders-payments--delivery-01-Backend-PRD" class="subnav-link">8. 🆕 v2.1 — Orders, Payments & Delivery</a></li><li><a href="#9--v21--analytics-the-growth-dashboards-01-Backend-PRD" class="subnav-link">9. 🆕 v2.1 — Analytics (the growth dashboards)</a></li><li><a href="#10-the-rules-that-apply-to-every-request-non-functional-requirements-01-Backend-PRD" class="subnav-link">10. The rules that apply to every request (non-functional requirements)</a></li><li><a href="#11-summary-for-a-co-founder-01-Backend-PRD" class="subnav-link">11. Summary for a co-founder</a></li></ul>
+        </li>
+        <li class="nav-item" data-section="02-Mobile-App-PRD">
+          <a href="#02-Mobile-App-PRD" class="nav-link" onclick="activateSection('02-Mobile-App-PRD',event)">
+            <span class="nav-icon">📱</span>
+            <div class="nav-text">
+              <span class="nav-label">Mobile App</span>
+              <span class="nav-desc">Buyer & supplier phone experience</span>
+            </div>
+          </a>
+          <ul class="subnav"><li><a href="#1-why-the-mobile-app-is-the-primary-surface-02-Mobile-App-PRD" class="subnav-link">1. Why the mobile app is the "primary surface"</a></li><li><a href="#2-how-you-move-around-the-app-02-Mobile-App-PRD" class="subnav-link">2. How you move around the app</a></li><li><a href="#3-every-screen-in-plain-language-02-Mobile-App-PRD" class="subnav-link">3. Every screen, in plain language</a></li><li><a href="#4-the-complete-buyer-journey-02-Mobile-App-PRD" class="subnav-link">4. The complete BUYER journey</a></li><li><a href="#5-the-complete-supplier-journey-02-Mobile-App-PRD" class="subnav-link">5. The complete SUPPLIER journey</a></li><li><a href="#6-things-that-make-the-app-feel-good-cross-cutting-decisions-02-Mobile-App-PRD" class="subnav-link">6. Things that make the app feel good (cross-cutting decisions)</a></li><li><a href="#7-what-the-app-deliberately-leaves-out-02-Mobile-App-PRD" class="subnav-link">7. What the app deliberately leaves out</a></li><li><a href="#8-the-technical-bits-worth-knowing-for-engineers-02-Mobile-App-PRD" class="subnav-link">8. The technical bits worth knowing (for engineers)</a></li><li><a href="#9-summary-for-a-co-founder-02-Mobile-App-PRD" class="subnav-link">9. Summary for a co-founder</a></li></ul>
+        </li>
+        <li class="nav-item" data-section="03-Web-App-PRD">
+          <a href="#03-Web-App-PRD" class="nav-link" onclick="activateSection('03-Web-App-PRD',event)">
+            <span class="nav-icon">🌐</span>
+            <div class="nav-text">
+              <span class="nav-label">Web App</span>
+              <span class="nav-desc">Website & Google traffic</span>
+            </div>
+          </a>
+          <ul class="subnav"><li><a href="#1-why-a-website-at-all-when-we-have-an-app-03-Web-App-PRD" class="subnav-link">1. Why a website at all, when we have an app?</a></li><li><a href="#2-mobile-first-even-on-the-web-03-Web-App-PRD" class="subnav-link">2. "Mobile-first," even on the web</a></li><li><a href="#3-how-you-move-around-the-website-03-Web-App-PRD" class="subnav-link">3. How you move around the website</a></li><li><a href="#4-the-pages-03-Web-App-PRD" class="subnav-link">4. The pages</a></li><li><a href="#5-the-clever-bit-which-pages-are-built-for-google-and-which-for-speed-03-Web-App-PRD" class="subnav-link">5. The clever bit: which pages are built for Google, and which for speed</a></li><li><a href="#6-one-cart-across-web-and-app-03-Web-App-PRD" class="subnav-link">6. One cart across web and app</a></li><li><a href="#7-keeping-the-brand-consistent-03-Web-App-PRD" class="subnav-link">7. Keeping the brand consistent</a></li><li><a href="#8-the-buyer--supplier-journeys-on-web-03-Web-App-PRD" class="subnav-link">8. The buyer & supplier journeys on web</a></li><li><a href="#9-what-the-website-deliberately-leaves-out-03-Web-App-PRD" class="subnav-link">9. What the website deliberately leaves out</a></li><li><a href="#10-the-technical-bits-worth-knowing-for-engineers-03-Web-App-PRD" class="subnav-link">10. The technical bits worth knowing (for engineers)</a></li><li><a href="#11-summary-for-a-co-founder-03-Web-App-PRD" class="subnav-link">11. Summary for a co-founder</a></li></ul>
+        </li>
+        <li class="nav-item" data-section="04-Admin-Panel-PRD">
+          <a href="#04-Admin-Panel-PRD" class="nav-link" onclick="activateSection('04-Admin-Panel-PRD',event)">
+            <span class="nav-icon">🖥️</span>
+            <div class="nav-text">
+              <span class="nav-label">Admin Panel</span>
+              <span class="nav-desc">Your control room</span>
+            </div>
+          </a>
+          <ul class="subnav"><li><a href="#1-what-the-admin-panel-is-for-04-Admin-Panel-PRD" class="subnav-link">1. What the admin panel is for</a></li><li><a href="#2-the-map-of-the-admin-panel-04-Admin-Panel-PRD" class="subnav-link">2. The map of the admin panel</a></li><li><a href="#3-section-by-section-in-plain-language-04-Admin-Panel-PRD" class="subnav-link">3. Section by section, in plain language</a></li><li><a href="#4-the-complete-admin-journey-04-Admin-Panel-PRD" class="subnav-link">4. The complete ADMIN journey</a></li><li><a href="#5-who-can-log-in-and-how-access-works-04-Admin-Panel-PRD" class="subnav-link">5. Who can log in, and how access works</a></li><li><a href="#6-what-the-admin-panel-deliberately-leaves-out-04-Admin-Panel-PRD" class="subnav-link">6. What the admin panel deliberately leaves out</a></li><li><a href="#7-the-technical-bits-worth-knowing-for-engineers-04-Admin-Panel-PRD" class="subnav-link">7. The technical bits worth knowing (for engineers)</a></li><li><a href="#8-summary-for-a-co-founder-04-Admin-Panel-PRD" class="subnav-link">8. Summary for a co-founder</a></li></ul>
+        </li></ul>
+    </div>
+    <div class="sidebar-footer">
+      <strong>Nirmaan</strong> — Construction Marketplace<br>
+      Dehradun + Haridwar · v1 core + v2.1 builds<br>
+      <span style="color:#94a3b8">🟢 v2.1 additions marked throughout</span>
+    </div>
+  </aside>
+
+  <!-- mobile tab strip -->
+  <div class="section-tabs" id="sectionTabs">
+    <button class="tab-btn active" onclick="switchSection('00-Nirmaan-Master-Overview',this)">📋 Overview</button>
+    <button class="tab-btn" onclick="switchSection('01-Backend-PRD',this)">⚙️ Backend</button>
+    <button class="tab-btn" onclick="switchSection('02-Mobile-App-PRD',this)">📱 Mobile</button>
+    <button class="tab-btn" onclick="switchSection('03-Web-App-PRD',this)">🌐 Web</button>
+    <button class="tab-btn" onclick="switchSection('04-Admin-Panel-PRD',this)">🖥️ Admin</button>
+  </div>
+
+  <!-- main content -->
+  <main class="main" id="mainContent" onscroll="onMainScroll()">
+    <section id="00-Nirmaan-Master-Overview" class="prd-section active"><h1 id="nirmaan--the-complete-product--technology-guide-00-Nirmaan-Master-Overview">Nirmaan — The Complete Product &amp; Technology Guide</h1>
+<h3 id="written-so-a-non-technical-co-founder-can-understand-the-whole-thing-00-Nirmaan-Master-Overview">Written so a non-technical co-founder can understand the whole thing</h3>
+<p><strong>Version:</strong> v1 (core) + v2.1 (everything actually built, clearly marked) <strong>Launch region:</strong> Dehradun + Haridwar (Uttarakhand) <strong>Last updated:</strong> June 2026</p>
+<hr>
+<h2 id="how-to-read-this-document-00-Nirmaan-Master-Overview">How to read this document</h2>
+<p>This is the <strong>master guide</strong>. It explains, in plain language, what Nirmaan is, who uses it, how money and materials flow through it, and how the technology is put together. You do not need a technical background to follow it.</p>
+<p>There are four companion documents that go deeper into each piece of software we built. You only need them when you want detail on a specific app:</p>
+<div class="table-wrap"><table>
+<tr><th>Document</th><th>What it covers</th><th>Who cares most</th></tr>
+<tr><td><strong>01 — Backend</strong></td><td>The &quot;brain&quot; that every app talks to</td><td>Engineers, but the summaries are for everyone</td></tr>
+<tr><td><strong>02 — Mobile App</strong></td><td>The main app buyers and suppliers use on their phones</td><td>Product, marketing, you</td></tr>
+<tr><td><strong>03 — Web App</strong></td><td>The website version (for Google search traffic)</td><td>Marketing, growth, SEO</td></tr>
+<tr><td><strong>04 — Admin Panel</strong></td><td>The control room you and your team use to run the business</td><td>You, operations, support hires</td></tr>
+</table></div>
+<div class="callout callout-v2"><strong>A note on versions.</strong> This project was first scoped as <strong>v1</strong> — a simple &quot;lead-generation&quot; marketplace with no online payments. It then grew into <strong>v2.1</strong>, which added real orders, online payment, delivery tracking, and analytics. Throughout these documents, anything that belongs to the bigger v2.1 build is marked like this:  🆕 <strong>v2.1</strong> — text describing the newer capability.  Everything not marked is part of the original v1 core.</div>
+<hr>
+<h2 id="1-what-is-nirmaan-in-one-paragraph-00-Nirmaan-Master-Overview">1. What is Nirmaan, in one paragraph?</h2>
+<p>Nirmaan is a <strong>marketplace for construction materials</strong> — tiles, paint, plywood, bathroom fittings, electricals, and so on — for a specific city at a time (we started with Dehradun and Haridwar). A <strong>buyer</strong> (think: a homeowner, contractor, or builder) opens the app, browses materials, and either adds them to a cart called <strong>&quot;My Truck&quot;</strong> or posts a <strong>&quot;Requirement&quot;</strong> describing what they need. Nearby verified <strong>suppliers</strong> (shops and wholesalers) get notified, send back <strong>quotes</strong> (their price), and the buyer picks one. In the original version the deal was then closed by phone. In the newer version 🆕 the buyer can place a real <strong>order</strong>, <strong>pay online</strong>, and <strong>track delivery</strong> — all inside the app.</p>
+<hr>
+<h2 id="2-the-three-kinds-of-people-who-use-nirmaan-00-Nirmaan-Master-Overview">2. The three kinds of people who use Nirmaan</h2>
+<p>Everything in the product exists to serve one of these three audiences. Keep them in mind; the entire design follows from them.</p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d0"><pre class="mermaid">flowchart LR
+    Buyer[&quot;🧑‍🔧 BUYER&lt;br/&gt;Homeowner, contractor, builder&lt;br/&gt;Needs materials&quot;]
+    Supplier[&quot;🏪 SUPPLIER&lt;br/&gt;Shop / wholesaler&lt;br/&gt;Wants to sell materials&quot;]
+    Admin[&quot;🧑‍💼 ADMIN (You)&lt;br/&gt;Runs the marketplace&lt;br/&gt;Approves, monitors, fixes gaps&quot;]
+
+    Buyer --&gt;|&quot;posts requirements,&lt;br/&gt;places orders&quot;| Marketplace((Nirmaan))
+    Supplier --&gt;|&quot;sends quotes,&lt;br/&gt;fulfils orders&quot;| Marketplace
+    Admin --&gt;|&quot;verifies suppliers,&lt;br/&gt;opens new areas&quot;| Marketplace</pre></div>
+<p><strong>The buyer</strong> wants the right material, at a fair price, from someone nearby they can trust, with as little hassle as possible.</p>
+<p><strong>The supplier</strong> wants a steady stream of genuine, ready-to-buy customers without spending on advertising.</p>
+<p><strong>The admin (you)</strong> wants the two sides to find each other smoothly, wants only genuine suppliers on the platform, and wants to see where demand is so you know which neighbourhood or material to expand into next.</p>
+<hr>
+<h2 id="3-the-core-idea-demand-engine-not-just-a-shop-00-Nirmaan-Master-Overview">3. The core idea: &quot;demand engine,&quot; not just a shop</h2>
+<p>Most people picture an online store like Amazon: fixed prices, add to cart, pay, done. Nirmaan is deliberately <strong>not</strong> that — at least not at its heart. Construction material pricing is negotiated, varies by quantity, and depends on the supplier. So Nirmaan&#x27;s heart is a <strong>demand engine</strong>:</p>
+<ol><li class="ordered">A buyer says *&quot;I need 200 sq ft of vitrified tiles in Dehradun.&quot;* — this is a <strong>Requirement</strong> (technically an <strong>RFQ</strong>, &quot;Request for Quote&quot;).</li>
+<li class="ordered">The system instantly finds suppliers who <strong>sell tiles</strong> AND <strong>serve that pincode</strong>. Each match becomes a <strong>Lead</strong> sent to that supplier.</li>
+<li class="ordered">Suppliers reply with a <strong>Quote</strong> (their price and terms).</li>
+<li class="ordered">The buyer compares quotes and <strong>accepts</strong> one.</li>
+</ol><p>That four-step loop — Requirement → Leads → Quotes → Accept — is the engine. Everything else (the catalog, the cart, payments) feeds into it or extends from it.</p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d1"><pre class="mermaid">flowchart LR
+    A[&quot;Buyer posts&lt;br/&gt;REQUIREMENT&lt;br/&gt;(category + area + qty)&quot;] --&gt; B[&quot;System MATCHES&lt;br/&gt;nearby suppliers&quot;]
+    B --&gt; C[&quot;Each match becomes&lt;br/&gt;a LEAD&quot;]
+    C --&gt; D[&quot;Supplier sends&lt;br/&gt;a QUOTE&quot;]
+    D --&gt; E[&quot;Buyer ACCEPTS&lt;br/&gt;a quote&quot;]
+    E --&gt; F[&quot;v1: close deal by phone 📞&quot;]
+    E --&gt; G[&quot;🆕 v2.1: place ORDER →&lt;br/&gt;PAY online → track DELIVERY&quot;]
+
+    style F fill:#fff3cd
+    style G fill:#d4edda</pre></div>
+<p><strong>Why this matters commercially:</strong> the single most valuable signal in the whole system is a <strong>Requirement that finds zero suppliers</strong>. That tells you exactly where you have a gap — a material nobody nearby sells, or a neighbourhood with no coverage. That is your to-do list for growth, and the admin panel surfaces it prominently.</p>
+<hr>
+<h2 id="4-the-full-journey-end-to-end-00-Nirmaan-Master-Overview">4. The full journey, end to end</h2>
+<p>Here is the complete path, combining what every person does. Yellow steps are the original v1; green steps are 🆕 v2.1 additions.</p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d2"><pre class="mermaid">flowchart TD
+    Start([&quot;Buyer opens Nirmaan&quot;]) --&gt; Login[&quot;Signs up / logs in&lt;br/&gt;(email code or Google)&quot;]
+    Login --&gt; Area[&quot;Confirms their area&lt;br/&gt;(pincode)&quot;]
+    Area --&gt; Browse[&quot;Browses catalog&lt;br/&gt;or searches&quot;]
+
+    Browse --&gt; Path{&quot;How do they&lt;br/&gt;want to proceed?&quot;}
+    Path --&gt;|&quot;Knows roughly&lt;br/&gt;what they want&quot;| Truck[&quot;Adds items to&lt;br/&gt;&#x27;My Truck&#x27; (cart)&quot;]
+    Path --&gt;|&quot;Wants quotes&quot;| RFQ[&quot;Posts a&lt;br/&gt;Requirement&quot;]
+
+    Truck --&gt; SendReq[&quot;Sends Truck&lt;br/&gt;as Requirement(s)&quot;]
+    SendReq --&gt; Match
+    RFQ --&gt; Match[&quot;System matches&lt;br/&gt;nearby suppliers&quot;]
+
+    Match --&gt; Lead[&quot;Suppliers receive Leads&lt;br/&gt;📱 push notification&quot;]
+    Lead --&gt; Quote[&quot;Supplier sends Quote&quot;]
+    Quote --&gt; Accept[&quot;Buyer accepts a Quote&quot;]
+
+    Accept --&gt; V1[&quot;v1 path:&lt;br/&gt;tap-to-call supplier,&lt;br/&gt;close deal offline 📞&quot;]:::v1
+    Accept --&gt; Order[&quot;🆕 Place Order&lt;br/&gt;(items, qty, address)&quot;]:::v2
+
+    Order --&gt; Pay[&quot;🆕 Pay online&lt;br/&gt;(UPI / card / netbanking)&quot;]:::v2
+    Pay --&gt; Fulfil[&quot;🆕 Supplier confirms,&lt;br/&gt;packs, ships&quot;]:::v2
+    Fulfil --&gt; Track[&quot;🆕 Buyer tracks status&lt;br/&gt;until Delivered&quot;]:::v2
+    Track --&gt; Done([&quot;Order complete&quot;]):::v2
+
+    classDef v1 fill:#fff3cd,stroke:#d39e00
+    classDef v2 fill:#d4edda,stroke:#28a745</pre></div>
+<hr>
+<h2 id="5-how-the-technology-is-arranged-the-boxes-diagram-00-Nirmaan-Master-Overview">5. How the technology is arranged (the &quot;boxes&quot; diagram)</h2>
+<p>You do not need to know how software is written to grasp the shape of it. Think of it as <strong>four apps that all talk to one brain, which talks to one database.</strong></p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d3"><pre class="mermaid">flowchart TB
+    subgraph Apps[&quot;The 4 things people open&quot;]
+        MA[&quot;📱 Mobile App&lt;br/&gt;(Android + iPhone)&lt;br/&gt;buyers &amp; suppliers&quot;]
+        WB[&quot;🌐 Website&lt;br/&gt;buyers &amp; suppliers&lt;br/&gt;(captures Google traffic)&quot;]
+        AD[&quot;🖥️ Admin Panel&lt;br/&gt;you &amp; your team&quot;]
+    end
+
+    BRAIN[&quot;🧠 THE BACKEND&lt;br/&gt;One central &#x27;brain&#x27;&lt;br/&gt;All rules &amp; logic live here&quot;]
+
+    subgraph Infra[&quot;Supporting services&quot;]
+        DB[(&quot;🗄️ Database&lt;br/&gt;The single source of truth&lt;br/&gt;— every fact lives here&quot;)]
+        STORE[&quot;🖼️ File storage&lt;br/&gt;(product photos, docs)&quot;]
+        PUSH[&quot;🔔 Push notifications&lt;br/&gt;(alerts to phones)&quot;]
+        PAY[&quot;💳 Razorpay 🆕&lt;br/&gt;(handles money)&quot;]
+    end
+
+    MA --&gt; BRAIN
+    WB --&gt; BRAIN
+    AD --&gt; BRAIN
+    BRAIN --&gt; DB
+    BRAIN --&gt; STORE
+    BRAIN --&gt; PUSH
+    BRAIN --&gt; PAY</pre></div>
+<p><strong>The single most important design rule:</strong> no app ever touches the database directly. The mobile app, the website, and the admin panel <strong>all</strong> go through the one backend &quot;brain.&quot; This is deliberate — it means the rules of the business (who can do what, how matching works, how money is split) are written <strong>once, in one place</strong>, instead of being copied into three apps where they would drift apart and cause bugs.</p>
+<h3 id="why-these-specific-technology-choices-plain-language-version-00-Nirmaan-Master-Overview">Why these specific technology choices? (plain-language version)</h3>
+<div class="table-wrap"><table>
+<tr><th>Choice we made</th><th>What it is</th><th>Why, in business terms</th></tr>
+<tr><td><strong>PostgreSQL database</strong> (via Supabase)</td><td>The system that stores all the facts</td><td>Our data is full of relationships (a quote belongs to a lead, which belongs to a requirement). This type of database guarantees those links stay consistent — you can never end up with a &quot;quote for a requirement that doesn&#x27;t exist.&quot; It&#x27;s also cheap (free tier covers the whole pilot) and easy to manage with a visual editor.</td></tr>
+<tr><td><strong>One backend, modular inside</strong></td><td>The &quot;brain,&quot; built in neat sections</td><td>Cheaper and simpler to run than splitting it into many pieces, but organised internally so we *can* split it later when we&#x27;re big — without a rewrite.</td></tr>
+<tr><td><strong>React Native</strong> for mobile</td><td>A way to build Android + iPhone apps from one codebase</td><td>We write the app once and it runs on both Android and iPhone — roughly half the cost and time of building two separate apps.</td></tr>
+<tr><td><strong>Next.js</strong> for web &amp; admin</td><td>A modern website framework</td><td>It produces pages that Google can read and rank, which is central to our cheap-customer-acquisition strategy.</td></tr>
+<tr><td><strong>Razorpay</strong> 🆕 for payments</td><td>India&#x27;s standard payment gateway</td><td>Handles UPI, cards, and netbanking, and can automatically split each payment between us (commission) and the supplier.</td></tr>
+</table></div>
+<hr>
+<h2 id="6-the-data-model--the-nouns-of-the-business-00-Nirmaan-Master-Overview">6. The data model — the &quot;nouns&quot; of the business</h2>
+<p>Every piece of software is built around a handful of core &quot;things&quot; (engineers call them entities or tables). If you understand these nouns and how they connect, you understand the system. Here they are in plain English.</p>
+<div class="table-wrap"><table>
+<tr><th>The &quot;thing&quot;</th><th>In plain English</th><th>Connects to</th></tr>
+<tr><td><strong>User</strong></td><td>A person. Can be a buyer, a supplier, or both.</td><td>Owns requirements, a cart, and (if a supplier) a business profile</td></tr>
+<tr><td><strong>Serviceable Area</strong></td><td>A pincode we&#x27;ve switched on. The unit of our launch strategy.</td><td>Buyers belong to one; suppliers cover several</td></tr>
+<tr><td><strong>Supplier Profile</strong></td><td>A shop&#x27;s business details (name, GST number, verified badge)</td><td>Belongs to a user; lists catalog items; covers areas</td></tr>
+<tr><td><strong>Category</strong></td><td>A type of material (Tiles, Paint, Plywood…)</td><td>Groups catalog items and requirements</td></tr>
+<tr><td><strong>Catalog Item</strong></td><td>One product a supplier lists (e.g. &quot;Vitrified Tiles 2x2 ft&quot;)</td><td>Belongs to a supplier and a category</td></tr>
+<tr><td><strong>Requirement (RFQ)</strong></td><td>A buyer&#x27;s posted need</td><td>Generates leads</td></tr>
+<tr><td><strong>Lead</strong></td><td>One requirement shown to one matched supplier</td><td>Belongs to a requirement + a supplier; may get a quote</td></tr>
+<tr><td><strong>Quote</strong></td><td>A supplier&#x27;s price offer on a lead</td><td>Belongs to a lead</td></tr>
+<tr><td><strong>Cart Item (&quot;My Truck&quot;)</strong></td><td>A saved product before buying</td><td>Belongs to a user</td></tr>
+<tr><td><strong>Message</strong></td><td>A chat note between buyer and supplier</td><td>Belongs to a lead</td></tr>
+<tr><td><strong>Notification</strong></td><td>An alert (push or in-app)</td><td>Belongs to a user</td></tr>
+<tr><td>🆕 <strong>Address</strong></td><td>A buyer&#x27;s delivery address</td><td>Belongs to a user; used by orders</td></tr>
+<tr><td>🆕 <strong>Order</strong></td><td>A confirmed purchase</td><td>Belongs to buyer + supplier; has order items</td></tr>
+<tr><td>🆕 <strong>Order Item</strong></td><td>One line inside an order</td><td>Belongs to an order</td></tr>
+<tr><td>🆕 <strong>Payment</strong></td><td>A money transaction via Razorpay</td><td>Belongs to an order</td></tr>
+</table></div>
+<p>Here&#x27;s how the original v1 &quot;nouns&quot; relate to each other:</p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d4"><pre class="mermaid">erDiagram
+    USER ||--o{ REQUIREMENT : posts
+    USER ||--o{ CART_ITEM : &quot;fills My Truck with&quot;
+    USER ||--o| SUPPLIER_PROFILE : &quot;may have&quot;
+    SUPPLIER_PROFILE ||--o{ CATALOG_ITEM : lists
+    SUPPLIER_PROFILE ||--o{ SERVICE_AREA : serves
+    CATEGORY ||--o{ CATALOG_ITEM : groups
+    CATEGORY ||--o{ REQUIREMENT : &quot;classifies&quot;
+    REQUIREMENT ||--o{ LEAD : generates
+    SUPPLIER_PROFILE ||--o{ LEAD : receives
+    LEAD ||--o{ QUOTE : &quot;answered by&quot;
+    LEAD ||--o{ MESSAGE : &quot;discussed in&quot;
+    USER ||--o{ NOTIFICATION : receives</pre></div>
+<p>And here is what 🆕 v2.1 added on top — the transactional layer that turns an accepted quote into a paid, delivered order:</p>
+<div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d5"><pre class="mermaid">erDiagram
+    USER ||--o{ ADDRESS : &quot;saves&quot;
+    QUOTE ||--o| ORDER : &quot;becomes (when accepted &amp; placed)&quot;
+    USER ||--o{ ORDER : &quot;places (as buyer)&quot;
+    SUPPLIER_PROFILE ||--o{ ORDER : &quot;fulfils&quot;
+    ADDRESS ||--o{ ORDER : &quot;delivered to&quot;
+    ORDER ||--o{ ORDER_ITEM : contains
+    ORDER ||--o| PAYMENT : &quot;paid by&quot;
+    ORDER ||--o{ ORDER_STATUS_EVENT : &quot;tracked through&quot;</pre></div>
+<hr>
+<h2 id="7-the-two-big-cross-cutting-ideas-00-Nirmaan-Master-Overview">7. The two big &quot;cross-cutting&quot; ideas</h2>
+<p>A couple of concepts show up in every single app, so they&#x27;re worth understanding once, here.</p>
+<h3 id="71-geofencing--we-launch-one-pincode-at-a-time-00-Nirmaan-Master-Overview">7.1 Geofencing — &quot;we launch one pincode at a time&quot;</h3>
+<p>Nirmaan does not open everywhere at once. We switch on <strong>one pincode at a time</strong>, the way Swiggy or Zomato light up neighbourhoods. A pincode that&#x27;s switched on is a <strong>Serviceable Area</strong>.</p>
+<ul><li class="depth-0">Buyers can only post requirements from a switched-on area.</li>
+<li class="depth-0">Suppliers declare which pincodes they cover.</li>
+<li class="depth-0">Matching only ever connects a buyer and supplier in the <strong>same</strong> area and <strong>same</strong> material category.</li>
+<li class="depth-0">You control which pincodes are live entirely from the <strong>admin panel</strong> — opening a new neighbourhood needs no engineering work, just a click.</li>
+</ul><div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d6"><pre class="mermaid">flowchart LR
+    Buyer[&quot;Buyer in pincode 248001&lt;br/&gt;needs Tiles&quot;] --&gt; Engine{&quot;Matching&quot;}
+    S1[&quot;Supplier A:&lt;br/&gt;sells Tiles, covers 248001&quot;] --&gt;|&quot;✅ match&quot;| Engine
+    S2[&quot;Supplier B:&lt;br/&gt;sells Paint, covers 248001&quot;] --&gt;|&quot;❌ wrong category&quot;| Engine
+    S3[&quot;Supplier C:&lt;br/&gt;sells Tiles, covers 249401&quot;] --&gt;|&quot;❌ wrong area&quot;| Engine
+    Engine --&gt; Lead[&quot;Lead created&lt;br/&gt;only for Supplier A&quot;]</pre></div>
+<h3 id="72-language--english--hindi-00-Nirmaan-Master-Overview">7.2 Language — English + Hindi</h3>
+<p>The app supports English and Hindi. There are two different kinds of &quot;translation,&quot; and we treat them differently to keep costs near zero:</p>
+<ul><li class="depth-0"><strong>Fixed labels</strong> (buttons, tab names like &quot;My Truck&quot;) — translated once in files shipped with each app. Free.</li>
+<li class="depth-0"><strong>Category names</strong> and the Help/Privacy/Terms pages — stored in the database in both languages, because there are few of them and you write them yourself.</li>
+<li class="depth-0"><strong>Free text people type</strong> (requirement descriptions, chat, product titles a supplier wrote) — shown exactly as typed, <strong>not</strong> auto-translated in v1. Real-time translation of arbitrary text is expensive and most people in one city share a working language, so it was deliberately left for later.</li>
+</ul><p>A safety rule the backend enforces: <strong>if a Hindi translation is ever missing, show the English one</strong> — never a blank screen.</p>
+<hr>
+<h2 id="8-how-we-make-money--00-Nirmaan-Master-Overview">8. How we make money 🆕</h2>
+<p>In the original v1, Nirmaan made no money directly inside the app — it generated leads and the value was in connecting people. In <strong>v2.1</strong>, with real orders and payments, the revenue model became concrete:</p>
+<ul><li class="depth-0">Every paid order goes through <strong>Razorpay</strong>.</li>
+<li class="depth-0">Razorpay&#x27;s <strong>Route</strong> feature <strong>automatically splits</strong> each payment at the moment of purchase: the <strong>supplier&#x27;s share</strong> goes to the supplier&#x27;s linked bank account, and <strong>our commission</strong> stays with the platform.</li>
+<li class="depth-0">The commission percentage is a setting we control.</li>
+</ul><div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d7"><pre class="mermaid">flowchart LR
+    Buyer[&quot;Buyer pays ₹10,000&lt;br/&gt;for an order&quot;] --&gt; RP[&quot;Razorpay&quot;]
+    RP --&gt;|&quot;e.g. 95%&quot;| Sup[&quot;Supplier&#x27;s&lt;br/&gt;linked account&quot;]
+    RP --&gt;|&quot;e.g. 5% commission&quot;| Us[&quot;Nirmaan&lt;br/&gt;platform account&quot;]</pre></div>
+<div class="callout">There are open operational decisions around this (per-supplier bank account setup, how &quot;call me back&quot; payment links are split). Those are tracked in the project&#x27;s pending-review list, not blockers to the core flow.</div>
+<hr>
+<h2 id="9-what-we-deliberately-did-not-build-00-Nirmaan-Master-Overview">9. What we deliberately did NOT build</h2>
+<p>A huge part of keeping a first version shippable is being disciplined about what to leave out. These were <strong>intentionally</strong> excluded (they&#x27;re not bugs or oversights):</p>
+<ul><li class="depth-0">Cash on delivery, our own lending / &quot;buy now pay later&quot;</li>
+<li class="depth-0">Live GPS van tracking (we use a manual status timeline instead)</li>
+<li class="depth-0">Automatic refunds and an automated dispute-rules engine (a human resolves disputes)</li>
+<li class="depth-0">Ratings &amp; reviews</li>
+<li class="depth-0">Automatic supplier document verification (you verify your first suppliers by hand, on purpose, so you learn what actually matters)</li>
+<li class="depth-0">A full desktop-redesigned website / installable web app</li>
+<li class="depth-0">Multi-currency / international</li>
+</ul><p>The principle: <strong>don&#x27;t build sophistication before you have the volume that justifies it.</strong></p>
+<hr>
+<h2 id="10-where-the-project-stands-today-00-Nirmaan-Master-Overview">10. Where the project stands today</h2>
+<p>The build was structured in <strong>15 stages (0–14)</strong>, each one finished and runnable before the next began, so the four apps never drifted out of sync. As of the latest review:</p>
+<ul><li class="depth-0"><strong>All 15 stages are complete</strong> and type-checked. The product is feature-complete: catalog, requirements, matching, quotes, cart, orders, payments, delivery tracking, disputes, notifications, and analytics dashboards all exist.</li>
+<li class="depth-0">What remains is <strong>operational setup</strong>, not building: plugging in real credentials (Razorpay live keys, push-notification service, email), installing a couple of phone-specific components, and a short list of small decisions. These are tracked in the pending-review backlog.</li>
+<li class="depth-0">Everything was verified by automated checks in a sandbox; the final hands-on testing (real database, real test payments, on-device UI) happens on your machine.</li>
+</ul><div class="diagram-wrap" id="00-Nirmaan-Master-Overview__d8"><pre class="mermaid">flowchart LR
+    S0[&quot;Stage 0&lt;br/&gt;Setup&quot;] --&gt; S1[&quot;Stage 1&lt;br/&gt;Accounts &amp; login&quot;] --&gt; S2[&quot;Stage 2&lt;br/&gt;Marketplace core&quot;] --&gt; S3[&quot;Stage 3&lt;br/&gt;Thin admin&quot;] --&gt; S4[&quot;Stage 4&lt;br/&gt;Mobile app&quot;] --&gt; S5[&quot;Stage 5&lt;br/&gt;Website&quot;]
+    S5 --&gt; S6[&quot;Stage 6&lt;br/&gt;Full admin&quot;] --&gt; S7[&quot;Stages 7-9 🆕&lt;br/&gt;Orders &amp; payments&quot;] --&gt; S10[&quot;Stages 10-13 🆕&lt;br/&gt;Delivery, disputes,&lt;br/&gt;notifications, callbacks&quot;] --&gt; S14[&quot;Stage 14 🆕&lt;br/&gt;Analytics&quot;]
+    style S7 fill:#d4edda
+    style S10 fill:#d4edda
+    style S14 fill:#d4edda</pre></div>
+<hr>
+<h2 id="11-glossary--every-term-in-one-place-00-Nirmaan-Master-Overview">11. Glossary — every term in one place</h2>
+<div class="table-wrap"><table>
+<tr><th>Term</th><th>Plain meaning</th></tr>
+<tr><td><strong>RFQ / Requirement</strong></td><td>A buyer&#x27;s posted &quot;here&#x27;s what I need&quot;</td></tr>
+<tr><td><strong>Lead</strong></td><td>That requirement delivered to one matched supplier</td></tr>
+<tr><td><strong>Quote</strong></td><td>A supplier&#x27;s price offer</td></tr>
+<tr><td><strong>My Truck</strong></td><td>The shopping cart (named playfully; icon grows from cart → pickup → truck as it fills)</td></tr>
+<tr><td><strong>Serviceable Area</strong></td><td>A pincode we&#x27;ve switched on</td></tr>
+<tr><td><strong>Geofencing</strong></td><td>Restricting the marketplace to switched-on pincodes</td></tr>
+<tr><td><strong>Catalog Item</strong></td><td>A single product a supplier lists</td></tr>
+<tr><td><strong>Category</strong></td><td>A material type (Tiles, Paint…)</td></tr>
+<tr><td><strong>Supplier Profile</strong></td><td>A shop&#x27;s business record, with the verified badge</td></tr>
+<tr><td><strong>Backend / &quot;the brain&quot;</strong></td><td>The central software all apps talk to</td></tr>
+<tr><td><strong>Frontend</strong></td><td>Anything a person looks at and taps (the apps and website)</td></tr>
+<tr><td><strong>Database</strong></td><td>Where all facts are permanently stored</td></tr>
+<tr><td><strong>API</strong></td><td>The defined &quot;menu&quot; of requests an app can make to the backend</td></tr>
+<tr><td><strong>SSR / SEO</strong></td><td>Building web pages so Google can read and rank them</td></tr>
+<tr><td>🆕 <strong>Order</strong></td><td>A confirmed purchase</td></tr>
+<tr><td>🆕 <strong>Razorpay</strong></td><td>The payment company that processes money &amp; splits it</td></tr>
+<tr><td>🆕 <strong>Route / split</strong></td><td>Razorpay automatically dividing a payment between supplier and us</td></tr>
+<tr><td>🆕 <strong>Webhook</strong></td><td>Razorpay phoning our backend to say &quot;this payment succeeded&quot;</td></tr>
+<tr><td>🆕 <strong>Dispute</strong></td><td>A logged complaint about an order, resolved by a human</td></tr>
+<tr><td>🆕 <strong>Analytics rollup</strong></td><td>A nightly job that totals up demand so dashboards are fast</td></tr>
+</table></div>
+<hr>
+<p>*Continue to the four companion documents for detail on each app.*</p></section>
+<section id="01-Backend-PRD" class="prd-section"><h1 id="01--the-backend-the-brain-01-Backend-PRD">01 — The Backend (&quot;The Brain&quot;)</h1>
+<h3 id="a-detailed-but-readable-guide-to-the-central-system-every-app-talks-to-01-Backend-PRD">A detailed but readable guide to the central system every app talks to</h3>
+<div class="callout"><strong>For non-technical readers:</strong> each section opens with a plain-language <strong>&quot;In plain English&quot;</strong> box. You can read just those boxes and come away understanding the whole backend. The detail beneath is for engineers.</div>
+<hr>
+<h2 id="1-what-the-backend-is-and-why-it-exists-01-Backend-PRD">1. What the backend is and why it exists</h2>
+<div class="callout"><strong>In plain English:</strong> The backend is the single &quot;brain&quot; of Nirmaan. The mobile app, the website, and the admin panel are just *faces* — when you tap a button, they send a message to the backend, which decides what&#x27;s allowed, does the work, saves the result, and sends an answer back. Crucially, <strong>all the real rules of the business live here and only here.</strong> That&#x27;s why a buyer on the website and a buyer on the phone behave identically: they&#x27;re both asking the same brain.</div>
+<p>The backend is a single program (a &quot;modular monolith&quot;) that serves the mobile app, the web app, and the admin panel through one <strong>versioned REST API</strong>. No client ever talks to the database directly — everything goes through here. It is organised internally into clean modules, each owning one area of the business.</p>
+<div class="diagram-wrap" id="01-Backend-PRD__d0"><pre class="mermaid">flowchart LR
+    subgraph Core
+        Auth[&quot;Auth Module&lt;br/&gt;(login)&quot;]
+        Users[&quot;Users Module&lt;br/&gt;(profiles)&quot;]
+        Areas[&quot;Areas Module&lt;br/&gt;(pincodes)&quot;]
+    end
+    subgraph Marketplace
+        Catalog[&quot;Catalog&lt;br/&gt;(products)&quot;]
+        RFQ[&quot;Requirements&quot;]
+        Lead[&quot;Leads&quot;]
+        Quote[&quot;Quotes&quot;]
+        Cart[&quot;My Truck&quot;]
+    end
+    subgraph Support
+        Chat[&quot;Chat&quot;]
+        Notif[&quot;Notifications&quot;]
+        AdminM[&quot;Admin&quot;]
+    end
+    subgraph NewV2[&quot;🆕 v2.1 modules&quot;]
+        Orders[&quot;Orders&quot;]
+        Payments[&quot;Payments&quot;]
+        Delivery[&quot;Delivery / Tracking&quot;]
+        Analytics[&quot;Analytics&quot;]
+    end</pre></div>
+<p><strong>Why one program and not many small ones?</strong> At our scale — one region, thousands of users — splitting into many independent services would add cost and debugging headaches for no benefit. The internal module boundaries mean we *can* split later when we&#x27;re large, without a rewrite. We don&#x27;t pay that price now.</p>
+<hr>
+<h2 id="2-logging-in-the-auth-module-01-Backend-PRD">2. Logging in (the Auth module)</h2>
+<div class="callout"><strong>In plain English:</strong> Two ways to get in: a <strong>6-digit code emailed to you</strong>, or <strong>&quot;Continue with Google.&quot;</strong> There&#x27;s no separate &quot;sign up&quot; vs &quot;log in&quot; — if you&#x27;re new, the system quietly creates your account; if you&#x27;re returning, it recognises you. After a brand-new login we ask for just two things — your <strong>name</strong> and your <strong>area (pincode)</strong> — before letting you into the app. Behind the scenes, the system hands your app a secure &quot;pass&quot; (a token) that proves who you are on every later request, so you don&#x27;t re-enter your code constantly.</div>
+<h3 id="how-email-code-login-works-01-Backend-PRD">How email-code login works</h3>
+<div class="diagram-wrap" id="01-Backend-PRD__d1"><pre class="mermaid">sequenceDiagram
+    participant App
+    participant Backend
+    App-&gt;&gt;Backend: &quot;Send a code to this email&quot;
+    Backend-&gt;&gt;App: emails a 6-digit code (valid 5 min)
+    App-&gt;&gt;Backend: &quot;Here&#x27;s the code I received&quot;
+    Backend-&gt;&gt;Backend: check code, find-or-create the user
+    Backend-&gt;&gt;App: secure access pass + who you are + &quot;are you new?&quot;</pre></div>
+<p>Google login works the same way, except Google vouches for the user&#x27;s identity instead of an emailed code.</p>
+<h3 id="the-menu-of-login-requests-api-contract-01-Backend-PRD">The &quot;menu&quot; of login requests (API contract)</h3>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th><th>Notes</th></tr>
+<tr><td><code>POST /auth/otp/request</code></td><td>Ask for an email code</td><td>Limited to 3 per hour per email (anti-abuse)</td></tr>
+<tr><td><code>POST /auth/otp/verify</code></td><td>Submit the code, get your pass</td><td>Tells the app if you&#x27;re a new user (→ show onboarding)</td></tr>
+<tr><td><code>POST /auth/google</code></td><td>Log in with Google</td><td>Same result shape</td></tr>
+<tr><td><code>POST /auth/refresh</code></td><td>Quietly renew an expired pass</td><td>So the user isn&#x27;t logged out</td></tr>
+<tr><td><code>POST /auth/logout</code></td><td>Log out</td><td>Invalidates the renewal pass</td></tr>
+</table></div>
+<p><strong>The security detail that matters:</strong> the &quot;access pass&quot; expires every 15 minutes and is silently renewed using a longer-lived &quot;refresh pass&quot; (30 days) that we store in a scrambled form so it can be revoked if needed. This is standard, safe practice.</p>
+<p><strong>Onboarding is enforced by the brain, not just the app:</strong> until a new user has set both their name and pincode, the backend itself refuses most requests. This means nobody can skip onboarding by using a different app or a hack — the rule lives in the one place that can&#x27;t be bypassed.</p>
+<hr>
+<h2 id="3-profiles-and-areas-users--areas-modules-01-Backend-PRD">3. Profiles and areas (Users &amp; Areas modules)</h2>
+<div class="callout"><strong>In plain English:</strong> Your profile holds your name, your area, and whether you&#x27;re a buyer, a supplier, or both. Changing your area is a one-tap action (like &quot;deliver to&quot; on a food app) because people switch neighbourhoods often. The Areas module is what powers the area-picker: it can tell the app &quot;yes, we serve pincode 248001&quot; or &quot;not yet.&quot;</div>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>GET /users/me</code></td><td>Get my profile and roles</td></tr>
+<tr><td><code>PATCH /users/me</code></td><td>Update name, pincode, or flip &quot;I&#x27;m a supplier&quot; on</td></tr>
+<tr><td><code>PATCH /users/me/area</code></td><td>Change my area (its own request because it&#x27;s so frequent)</td></tr>
+<tr><td><code>GET /areas/check?pincode=</code></td><td>&quot;Do you serve this pincode?&quot; — used before letting someone pick it</td></tr>
+<tr><td><code>GET /areas/active</code></td><td>List of all live pincodes for the picker</td></tr>
+</table></div>
+<p>🆕 <strong>v2.1 — Become a Supplier with a business location.</strong> When a buyer registers their shop, the backend captures their business pincode and (optionally) map coordinates via <code>PATCH /supplier/profile</code>. *(Note: this was a planned sub-item; see the pending-review backlog for its build status and the maps-pin UI.)*</p>
+<hr>
+<h2 id="4-the-catalog-browse--search-01-Backend-PRD">4. The catalog (browse &amp; search)</h2>
+<div class="callout"><strong>In plain English:</strong> This module powers everything a buyer sees while browsing: the grid of material categories, the list of products in a category, and — importantly — the <strong>search bar that shows 4 helpful suggestions the moment you tap it</strong>, before you&#x27;ve typed anything. All product listings are automatically filtered to the buyer&#x27;s current area, so you only ever see what&#x27;s actually available near you.</div>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>GET /categories?locale=</code></td><td>The category grid, in the right language, in display order</td></tr>
+<tr><td><code>GET /categories/:id/suggestions?q=</code></td><td>Powers the 4 search suggestions</td></tr>
+<tr><td><code>GET /catalog?category=&amp;pincode=&amp;q=</code></td><td>Search products, filtered to the area</td></tr>
+<tr><td><code>GET /catalog/:id</code></td><td>One product&#x27;s full detail</td></tr>
+<tr><td><code>POST/PATCH/DELETE /supplier/catalog</code></td><td>A supplier manages their own listings</td></tr>
+</table></div>
+<p><strong>The &quot;4 suggestions&quot; feature</strong> (a specific founder requirement) returns a tidy mix of matching categories and products. When you tap one, you land on that category page, pre-filtered. The &quot;show exactly 4&quot; rule lives in the backend (adjustable by a setting), not hidden in the app — so it stays consistent across phone and web.</p>
+<p><strong>One translation rule, written once:</strong> there&#x27;s a single shared helper that decides &quot;show the Hindi name if it exists, otherwise the English one.&quot; It is reused everywhere a translated label is read. Writing it once is how we avoid language bugs creeping in screen by screen.</p>
+<hr>
+<h2 id="5-the-demand-engine-requirements-leads-quotes-01-Backend-PRD">5. The demand engine (Requirements, Leads, Quotes)</h2>
+<div class="callout"><strong>In plain English:</strong> This is the heart of Nirmaan. A buyer posts a <strong>Requirement</strong> (&quot;I need X in area Y&quot;). The instant they do, the system finds every supplier who sells that material AND covers that area, and creates a <strong>Lead</strong> for each — like dealing one card to each matching supplier. Those suppliers get a phone notification, reply with a <strong>Quote</strong> (their price), and the buyer accepts the one they like.</div>
+<h3 id="requirements-01-Backend-PRD">Requirements</h3>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>POST /rfqs</code></td><td>Post a requirement → <strong>immediately triggers matching</strong></td></tr>
+<tr><td><code>GET /rfqs</code></td><td>A buyer&#x27;s own requirements</td></tr>
+<tr><td><code>GET /rfqs/:id</code></td><td>One requirement with its leads and quotes</td></tr>
+<tr><td><code>PATCH /rfqs/:id</code></td><td>Edit or cancel while still open</td></tr>
+</table></div>
+<h3 id="the-matching-logic--the-engines-core-01-Backend-PRD">The matching logic — the engine&#x27;s core</h3>
+<div class="diagram-wrap" id="01-Backend-PRD__d2"><pre class="mermaid">flowchart TD
+    A[&quot;Requirement posted:&lt;br/&gt;category + pincode + quantity&quot;] --&gt; B[&quot;Find suppliers WHERE&lt;br/&gt;they sell this category&lt;br/&gt;AND cover this pincode&quot;]
+    B --&gt; C{&quot;Any matches?&quot;}
+    C --&gt;|&quot;Yes&quot;| D[&quot;Create a Lead&lt;br/&gt;for each matching supplier&quot;]
+    D --&gt; F[&quot;Push notification&lt;br/&gt;to each one&quot;]
+    F --&gt; G[&quot;Requirement marked &#x27;matched&#x27;&quot;]
+    C --&gt;|&quot;No&quot;| E[&quot;Requirement marked &#x27;unmatched&#x27;&lt;br/&gt;→ this is your growth signal!&quot;]
+    style E fill:#ffe0b2</pre></div>
+<p>This runs <strong>instantly</strong> (not in a background queue) because the number of suppliers in any one pincode is small. We deliberately did <strong>not</strong> build heavy queueing infrastructure before the volume needs it.</p>
+<h3 id="leads-the-suppliers-side-01-Backend-PRD">Leads (the supplier&#x27;s side)</h3>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>GET /leads?status=</code></td><td>A supplier&#x27;s incoming leads</td></tr>
+<tr><td><code>GET /leads/:id</code></td><td>Lead detail (buyer&#x27;s contact appears once a quote is sent)</td></tr>
+<tr><td><code>PATCH /leads/:id/view</code></td><td>Mark as seen</td></tr>
+<tr><td><code>PATCH /leads/:id/decline</code></td><td>Pass on it</td></tr>
+</table></div>
+<h3 id="quotes-01-Backend-PRD">Quotes</h3>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>POST /leads/:id/quotes</code></td><td>Supplier sends a price → buyer gets notified</td></tr>
+<tr><td><code>PATCH /quotes/:id/accept</code></td><td>Buyer accepts → unlocks contact / 🆕 enables ordering</td></tr>
+<tr><td><code>PATCH /quotes/:id/reject</code></td><td>Buyer declines</td></tr>
+</table></div>
+<p>🆕 <strong>v2.1 — the moment of acceptance does more now.</strong> Accepting a quote fires an internal alert to your team (so a deal can be closed by phone if needed) and, in the full transactional flow, becomes the basis for placing a real <strong>Order</strong> at the agreed price.</p>
+<h3 id="the-status-life-stories-01-Backend-PRD">The status &quot;life stories&quot;</h3>
+<p>Each of these three things moves through a defined set of stages — useful to know because the admin dashboard reports on them:</p>
+<ul><li class="depth-0"><strong>Requirement:</strong> open → matched → quoted → closed → expired</li>
+<li class="depth-0"><strong>Lead:</strong> pending → viewed → quoted → declined → expired</li>
+<li class="depth-0"><strong>Quote:</strong> sent → accepted → rejected → expired</li>
+</ul><hr>
+<h2 id="6-my-truck-the-cart-01-Backend-PRD">6. My Truck (the cart)</h2>
+<div class="callout"><strong>In plain English:</strong> &quot;My Truck&quot; is the shopping cart. The fun part — the icon growing from a cart to a pickup to a full truck as you add more — is decided by the *apps*, not the brain. The backend just reports &quot;you have 7 items worth roughly ₹X&quot;; each app decides which icon to show. This keeps the brain simple and the playfulness where it belongs.</div>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>GET /cart</code></td><td>Items + total count + estimated value</td></tr>
+<tr><td><code>POST /cart</code></td><td>Add an item</td></tr>
+<tr><td><code>PATCH/DELETE /cart/:itemId</code></td><td>Change quantity / remove</td></tr>
+</table></div>
+<hr>
+<h2 id="7-chat-and-notifications-01-Backend-PRD">7. Chat and notifications</h2>
+<div class="callout"><strong>In plain English:</strong> Once a quote is in play, buyer and supplier can exchange short messages tied to that lead, and there&#x27;s a one-tap &quot;call&quot; that opens the phone dialer with the supplier&#x27;s number (we deliberately did <strong>not</strong> build calling *inside* the app — that&#x27;s needless complexity). Notifications are a simple shared service any part of the brain can use to &quot;ping&quot; a user, both as a phone push and an in-app alert.</div>
+<div class="table-wrap"><table>
+<tr><th>Request</th><th>What it does</th></tr>
+<tr><td><code>GET /leads/:id/messages</code></td><td>Chat history for a lead</td></tr>
+<tr><td><code>POST /leads/:id/messages</code></td><td>Send a message (or a &quot;request a callback&quot;)</td></tr>
+</table></div>
+<p>🆕 <strong>v2.1 — Notifications got a full read-side:</strong> users can list notifications, see an unread count, and mark them read. Every important event (a new lead, a quote, an order update) creates a notification row. &quot;Live while the app is open&quot; is currently done by the app <strong>checking every 15–20 seconds</strong> (polling), because a true always-on push channel needs extra infrastructure that&#x27;s noted in the backlog.</p>
+<hr>
+<h2 id="8--v21--orders-payments--delivery-01-Backend-PRD">8. 🆕 v2.1 — Orders, Payments &amp; Delivery</h2>
+<div class="callout"><strong>In plain English:</strong> This is the big addition that turned Nirmaan from a &quot;matchmaker&quot; into a real store. Once a buyer has an accepted quote (or a fixed-price cart), they can place an <strong>Order</strong> to a delivery <strong>Address</strong>, <strong>pay online</strong> through Razorpay, and then watch the order move through stages — confirmed, packed, shipped, delivered — like tracking any parcel. If something goes wrong, they can raise a <strong>dispute</strong>, which a human on your team resolves.</div>
+<h3 id="the-order-lifecycle-01-Backend-PRD">The order lifecycle</h3>
+<div class="diagram-wrap" id="01-Backend-PRD__d3"><pre class="mermaid">flowchart LR
+    Placed[&quot;PLACED&quot;] --&gt; Confirmed[&quot;CONFIRMED&lt;br/&gt;(supplier accepts)&quot;] --&gt; Packed[&quot;PACKED&quot;] --&gt; Shipped[&quot;SHIPPED&quot;] --&gt; Delivered[&quot;DELIVERED&quot;]
+    Placed -.-&gt;|&quot;either side&lt;br/&gt;cancels&quot;| Cancelled[&quot;CANCELLED&quot;]
+    style Delivered fill:#d4edda
+    style Cancelled fill:#f8d7da</pre></div>
+<h3 id="how-online-payment-works-the-safe-version-01-Backend-PRD">How online payment works (the safe version)</h3>
+<p>A common worry is &quot;what if the app *says* paid but the money didn&#x27;t go through?&quot; The design prevents that by <strong>trusting Razorpay&#x27;s own confirmation</strong>, not the app&#x27;s:</p>
+<div class="diagram-wrap" id="01-Backend-PRD__d4"><pre class="mermaid">sequenceDiagram
+    participant App
+    participant Backend
+    participant Razorpay
+    App-&gt;&gt;Backend: &quot;Place this order&quot;
+    Backend-&gt;&gt;Razorpay: create a payment order (with the split rules)
+    Razorpay-&gt;&gt;App: payment screen (UPI / card / netbanking)
+    App-&gt;&gt;Razorpay: buyer pays
+    Razorpay-&gt;&gt;Backend: 🔔 webhook: &quot;payment X succeeded&quot;
+    Backend-&gt;&gt;Backend: verify signature, mark Order PAID
+    Backend-&gt;&gt;App: order confirmed</pre></div>
+<p>The <strong>webhook</strong> (Razorpay phoning our backend directly) is the source of truth — even if the buyer closes the app at the wrong moment, the order still gets correctly marked paid. Razorpay&#x27;s <strong>Route</strong> feature splits the money at this point: the supplier&#x27;s share to their account, our commission to ours.</p>
+<h3 id="delivery-tracking-01-Backend-PRD">Delivery tracking</h3>
+<p>There&#x27;s no live GPS van (deliberately out of scope). Instead, the supplier advances the order through the stages above, and each change is recorded as a timestamped event the buyer can see. The driver&#x27;s phone number is included in a note on the dispatch step.</p>
+<h3 id="disputes-01-Backend-PRD">Disputes</h3>
+<p>Raising a dispute creates a separate record (it doesn&#x27;t freeze the order&#x27;s tracking). A human resolves it — there&#x27;s no automated refund engine in this version, by design.</p>
+<h3 id="call-me-back-payment-links--01-Backend-PRD">&quot;Call me back&quot; payment links 🆕</h3>
+<p>For buyers who&#x27;d rather finish on a phone call, your team can generate a <strong>Razorpay payment link</strong> from their cart. The buyer pays the link, and that triggers order creation. A few rules apply (one supplier per order, the buyer&#x27;s default address is used, items can only have quantities edited on the call) — all tracked in the backlog.</p>
+<hr>
+<h2 id="9--v21--analytics-the-growth-dashboards-01-Backend-PRD">9. 🆕 v2.1 — Analytics (the growth dashboards)</h2>
+<div class="callout"><strong>In plain English:</strong> Every night, the system quietly totals up the day&#x27;s activity — how many searches, requirements, and orders happened in each area and category — and stores those totals so the dashboards load instantly. The centrepiece is <strong>&quot;Demand by Area,&quot;</strong> which shows you, ranked, where people want things, including pincodes you don&#x27;t serve yet. That&#x27;s your expansion map.</div>
+<p>A nightly job buckets activity into daily totals per area and per category. The dashboards then read those pre-computed totals rather than crunching raw data live (which would be slow). A few known limitations — the &quot;map&quot; is a ranked list rather than a true geographic map for now, and totals are bucketed by UTC day — are documented in the backlog and don&#x27;t affect the overall trend picture.</p>
+<hr>
+<h2 id="10-the-rules-that-apply-to-every-request-non-functional-requirements-01-Backend-PRD">10. The rules that apply to every request (non-functional requirements)</h2>
+<div class="callout"><strong>In plain English:</strong> These are the &quot;house rules&quot; the brain follows on every single request, no matter which module — the equivalent of a building&#x27;s safety codes.</div>
+<div class="table-wrap"><table>
+<tr><th>Concern</th><th>The rule</th></tr>
+<tr><td><strong>Security</strong></td><td>Every request except login and area-check requires a valid pass (JWT)</td></tr>
+<tr><td><strong>Anti-abuse</strong></td><td>The code-request and search endpoints are rate-limited</td></tr>
+<tr><td><strong>Input checking</strong></td><td>Every request&#x27;s data is validated at the door; bad input is rejected immediately</td></tr>
+<tr><td><strong>Logging</strong></td><td>Structured logs with a request ID, so any issue can be traced</td></tr>
+<tr><td><strong>Consistent errors</strong></td><td>Every error comes back in the same shape, so apps handle them uniformly</td></tr>
+<tr><td><strong>Secrets</strong></td><td>Passwords and keys live in environment config, never in the code</td></tr>
+</table></div>
+<hr>
+<h2 id="11-summary-for-a-co-founder-01-Backend-PRD">11. Summary for a co-founder</h2>
+<p>The backend is the one place where Nirmaan&#x27;s rules live. It handles <strong>who you are</strong> (auth), <strong>where you are</strong> (areas), <strong>what&#x27;s for sale</strong> (catalog), the <strong>demand engine</strong> (requirements → leads → quotes), the <strong>cart</strong>, and — in v2.1 — <strong>orders, payments, delivery, and analytics</strong>. Every app is just a window onto this brain. If you remember one thing: *the business logic is written once, here, so the three apps can never disagree about how Nirmaan works.*</p></section>
+<section id="02-Mobile-App-PRD" class="prd-section"><h1 id="02--the-mobile-app-02-Mobile-App-PRD">02 — The Mobile App</h1>
+<h3 id="the-main-product-what-buyers-and-suppliers-see-and-do-on-their-phones-02-Mobile-App-PRD">The main product: what buyers and suppliers see and do on their phones</h3>
+<div class="callout"><strong>For non-technical readers:</strong> this is the app your customers actually hold in their hands. It&#x27;s built once and runs on both <strong>Android and iPhone</strong>. Android ships first because that&#x27;s where most of our users are. Below, every screen is described in plain language, followed by the buyer&#x27;s and supplier&#x27;s complete journeys.</div>
+<hr>
+<h2 id="1-why-the-mobile-app-is-the-primary-surface-02-Mobile-App-PRD">1. Why the mobile app is the &quot;primary surface&quot;</h2>
+<p>The phone app is where the real product lives. People in construction are on-site, on their phones — not at a desk. Everything is designed for one-handed, quick, &quot;I need this material now&quot; use. The website (document 03) exists mainly to capture Google traffic; the app is where engaged users live.</p>
+<p><strong>Built with React Native:</strong> one codebase produces both the Android and iPhone apps, roughly halving the cost and time versus building each separately. Android is released and QA&#x27;d first; iPhone follows.</p>
+<hr>
+<h2 id="2-how-you-move-around-the-app-02-Mobile-App-PRD">2. How you move around the app</h2>
+<div class="callout"><strong>In plain English:</strong> After logging in, the app has <strong>four tabs along the bottom</strong> — Home, Categories, My Truck, and Profile — exactly like Instagram or WhatsApp&#x27;s bottom bar. You spend your whole time moving between these four.</div>
+<div class="diagram-wrap" id="02-Mobile-App-PRD__d0"><pre class="mermaid">flowchart TD
+    Splash[&quot;App opens&quot;] --&gt; Check{&quot;Logged in?&quot;}
+    Check --&gt;|&quot;No&quot;| Login[&quot;Login / Sign Up&quot;]
+    Check --&gt;|&quot;Yes, but new&quot;| Onboard[&quot;Name + Area&quot;]
+    Check --&gt;|&quot;Yes, all set&quot;| Tabs[&quot;The 4 tabs&quot;]
+    Login --&gt; OTP[&quot;Enter email code&quot;]
+    Login --&gt; Google[&quot;Continue with Google&quot;]
+    OTP --&gt; Onboard
+    Google --&gt; Onboard
+    Onboard --&gt; Tabs
+
+    Tabs --&gt; Home
+    Tabs --&gt; Categories
+    Tabs --&gt; Truck[&quot;My Truck&quot;]
+    Tabs --&gt; Profile
+
+    Home --&gt; Search[&quot;Search&lt;br/&gt;(4 suggestions)&quot;]
+    Search --&gt; CatPage[&quot;Category page&lt;br/&gt;(pre-filtered)&quot;]
+    Categories --&gt; CatPage
+    CatPage --&gt; Item[&quot;Item detail&quot;]
+    Item --&gt; PostReq[&quot;Post Requirement&quot;]
+    PostReq --&gt; Confirm[&quot;Confirmation&quot;]
+    Profile --&gt; Extras[&quot;Help / Policies / Switch Area&quot;]</pre></div>
+<hr>
+<h2 id="3-every-screen-in-plain-language-02-Mobile-App-PRD">3. Every screen, in plain language</h2>
+<h3 id="31-login---sign-up--one-screen-no-friction-02-Mobile-App-PRD">3.1 Login / Sign Up — one screen, no friction</h3>
+<div class="callout">A single screen. Type your email and tap &quot;Send Code,&quot; <strong>or</strong> tap &quot;Continue with Google.&quot; We deliberately do <strong>not</strong> ask &quot;are you new or returning?&quot; — the system figures that out. New users flow into onboarding; returning users go straight in. The 6-digit code auto-fills where the phone allows, with a 30-second resend timer. A wrong code shows quiet red text under the boxes, not an alarming popup — keeping you in the flow.</div>
+<h3 id="32-onboarding--only-for-brand-new-users-02-Mobile-App-PRD">3.2 Onboarding — only for brand-new users</h3>
+<div class="callout">Just <strong>two fields on one screen: Name and Area (pincode)</strong>. The area field is the exact same picker used in the header later — built once, reused everywhere. This is also the natural moment to offer the English/Hindi toggle.</div>
+<h3 id="33-the-header--always-visible-02-Mobile-App-PRD">3.3 The header — always visible</h3>
+<div class="callout">Across the top of every tab: the <strong>Nirmaan logo</strong>, your <strong>current area</strong> (e.g. &quot;📍 Dehradun ▾&quot; — tap to switch neighbourhoods), and your <strong>name</strong> (tap to jump to Profile). Switching your area instantly re-filters everything you see to that pincode.</div>
+<pre class="code-block"><code>┌─────────────────────────────────────────────┐
+│  [Logo] Nirmaan      📍 Dehradun ▾      👤 Rohit │
+└─────────────────────────────────────────────┘</code></pre>
+<h3 id="34-home-tab-02-Mobile-App-PRD">3.4 Home tab</h3>
+<div class="callout">The <strong>search bar sits at the top and opens with 4 suggestions</strong> the moment you tap it — before you type a thing (recent or trending choices), then live results as you type. Below it: a quick grid of category icons, then &quot;Popular near you&quot; products filtered to your area.</div>
+<div class="diagram-wrap" id="02-Mobile-App-PRD__d1"><pre class="mermaid">sequenceDiagram
+    participant You
+    participant SearchBar
+    You-&gt;&gt;SearchBar: tap (nothing typed yet)
+    SearchBar-&gt;&gt;You: shows 4 trending/recent suggestions
+    You-&gt;&gt;SearchBar: type &quot;til&quot;
+    SearchBar-&gt;&gt;You: shows 4 live matches
+    You-&gt;&gt;SearchBar: tap one
+    SearchBar-&gt;&gt;You: opens that category, pre-filtered</pre></div>
+<h3 id="35-categories-tab-02-Mobile-App-PRD">3.5 Categories tab</h3>
+<div class="callout">This screen <strong>is</strong> a search bar at the top, plus a scrollable grid of all categories below for browsing without typing. Tapping any category opens its page.</div>
+<h3 id="36-category-page-02-Mobile-App-PRD">3.6 Category page</h3>
+<div class="callout">A filtered list of products in that category and your area. Each card shows: title, unit, price estimate, supplier name, and two actions — <strong>&quot;Add to Truck&quot;</strong> and <strong>&quot;Post Requirement instead.&quot;</strong> A persistent banner at the top — <strong>&quot;Can&#x27;t find it? Post a Requirement&quot;</strong> — is never buried, because posting a requirement is our core demand engine.</div>
+<h3 id="37-post-requirement-the-demand-engine-entry-02-Mobile-App-PRD">3.7 Post Requirement (the demand engine entry)</h3>
+<div class="callout">A short form, <strong>four fields maximum</strong>: Category (pre-filled if you came from a category), Description, Quantity + Unit, and confirm your Area. Submit and you get an <strong>honest</strong> confirmation — &quot;We&#x27;ve notified suppliers near you&quot; — never a false promise of instant delivery.</div>
+<h3 id="38-my-truck-tab-the-playful-cart-02-Mobile-App-PRD">3.8 My Truck tab (the playful cart)</h3>
+<div class="callout">Your cart, with the signature touch: the <strong>icon grows with the load</strong>, while the label always stays &quot;My Truck.&quot;</div>
+<div class="table-wrap"><table>
+<tr><th>Items in cart</th><th>Icon shown</th></tr>
+<tr><td>0</td><td>empty cart outline (&quot;My Truck is empty&quot;)</td></tr>
+<tr><td>1–5</td><td>🛺 hand-cart / &quot;Bailgadi&quot;</td></tr>
+<tr><td>6–15</td><td>🛻 pickup</td></tr>
+<tr><td>16+</td><td>🚛 full truck</td></tr>
+</table></div>
+<div class="callout callout-v2">Each item has a quantity stepper and a line <strong>estimate</strong> (never &quot;total price&quot; — these are negotiated materials, so we always say &quot;estimated value&quot; to avoid implying a fixed checkout). The main button, <strong>&quot;Send as Requirement,&quot;</strong> turns your cart into requirements (grouped by category).  🆕 <strong>v2.1:</strong> for fixed-price items, the cart can also lead into a real <strong>checkout</strong> — choose an address, place the order, and pay.</div>
+<h3 id="39-profile-tab-02-Mobile-App-PRD">3.9 Profile tab</h3>
+<div class="callout callout-v2">Your name and contact at the top, then: <strong>Become a Supplier</strong> (if you aren&#x27;t one), <strong>My Requirements</strong> (your history), My Truck history, <strong>Help &amp; Support</strong>, <strong>Privacy Policy</strong>, <strong>Terms of Service</strong>, Switch Area, and Logout.  🆕 <strong>v2.1:</strong> also <strong>My Orders</strong> (with live status tracking) and saved <strong>Addresses</strong>.</div>
+<hr>
+<h2 id="4-the-complete-buyer-journey-02-Mobile-App-PRD">4. The complete BUYER journey</h2>
+<div class="callout callout-v2"><strong>In plain English:</strong> here&#x27;s everything a buyer does, start to finish, combining v1 and v2.1.</div>
+<div class="diagram-wrap" id="02-Mobile-App-PRD__d2"><pre class="mermaid">flowchart TD
+    A[&quot;Open app, log in&quot;] --&gt; B[&quot;Confirm area&quot;]
+    B --&gt; C[&quot;Search or browse catalog&quot;]
+    C --&gt; D{&quot;Found exactly&lt;br/&gt;what I need?&quot;}
+    D --&gt;|&quot;Not sure / want prices&quot;| E[&quot;Post a Requirement&quot;]
+    D --&gt;|&quot;Yes, add a few things&quot;| F[&quot;Add to My Truck&quot;]
+    F --&gt; G[&quot;Send Truck as Requirement(s)&quot;]
+    E --&gt; H[&quot;Suppliers matched &amp; notified&quot;]
+    G --&gt; H
+    H --&gt; I[&quot;Receive Quotes&quot;]
+    I --&gt; J[&quot;Compare &amp; accept one&quot;]
+    J --&gt; K1[&quot;v1: tap-to-call,&lt;br/&gt;finish offline 📞&quot;]:::v1
+    J --&gt; K2[&quot;🆕 Place Order&lt;br/&gt;+ pick address&quot;]:::v2
+    K2 --&gt; L[&quot;🆕 Pay online&quot;]:::v2
+    L --&gt; M[&quot;🆕 Track: Confirmed →&lt;br/&gt;Packed → Shipped → Delivered&quot;]:::v2
+    M --&gt; N[&quot;🆕 Raise a dispute if needed&quot;]:::v2
+    classDef v1 fill:#fff3cd,stroke:#d39e00
+    classDef v2 fill:#d4edda,stroke:#28a745</pre></div>
+<hr>
+<h2 id="5-the-complete-supplier-journey-02-Mobile-App-PRD">5. The complete SUPPLIER journey</h2>
+<div class="callout callout-v2"><strong>In plain English:</strong> a supplier is just a user who tapped &quot;Become a Supplier.&quot; Once verified by you (the admin), they list products, receive leads, quote, and — in v2.1 — fulfil orders.</div>
+<div class="diagram-wrap" id="02-Mobile-App-PRD__d3"><pre class="mermaid">flowchart TD
+    A[&quot;Tap &#x27;Become a Supplier&#x27;&quot;] --&gt; B[&quot;Enter business details&lt;br/&gt;(name, GST, area, categories)&quot;]
+    B --&gt; C[&quot;⏳ Wait for admin verification&quot;]
+    C --&gt; D[&quot;✅ Verified badge granted&quot;]
+    D --&gt; E[&quot;List catalog items&quot;]
+    E --&gt; F[&quot;📱 Receive Leads&lt;br/&gt;(push notification)&quot;]
+    F --&gt; G[&quot;View lead, decide&quot;]
+    G --&gt; H[&quot;Send a Quote&quot;]
+    H --&gt; I{&quot;Buyer accepts?&quot;}
+    I --&gt;|&quot;Yes&quot;| J1[&quot;v1: buyer calls,&lt;br/&gt;close deal 📞&quot;]:::v1
+    I --&gt;|&quot;Yes&quot;| J2[&quot;🆕 Receive Order&quot;]:::v2
+    J2 --&gt; K[&quot;🆕 Confirm → Pack →&lt;br/&gt;Ship → Delivered&quot;]:::v2
+    K --&gt; L[&quot;🆕 Payment auto-split&lt;br/&gt;to my account&quot;]:::v2
+    classDef v1 fill:#fff3cd,stroke:#d39e00
+    classDef v2 fill:#d4edda,stroke:#28a745</pre></div>
+<hr>
+<h2 id="6-things-that-make-the-app-feel-good-cross-cutting-decisions-02-Mobile-App-PRD">6. Things that make the app feel good (cross-cutting decisions)</h2>
+<div class="callout"><strong>In plain English:</strong> a few deliberate choices that separate a &quot;cheap-feeling&quot; MVP from a &quot;smooth&quot; one.</div>
+<div class="table-wrap"><table>
+<tr><th>Decision</th><th>Why it matters</th></tr>
+<tr><td><strong>Skeleton loaders, not spinners</strong></td><td>Showing a grey outline of content that&#x27;s loading *feels* faster than a spinning wheel</td></tr>
+<tr><td><strong>One shared component library</strong></td><td>Buttons, inputs, and cards look identical on every tab — inconsistency is the #1 way apps feel cheap</td></tr>
+<tr><td><strong>Push notifications deep-link</strong></td><td>Tapping a &quot;new lead&quot; notification jumps straight to that lead, not the home screen</td></tr>
+<tr><td><strong>Tap-to-call, not in-app calling</strong></td><td>Opens the normal phone dialer — building voice calling into the app was needless complexity</td></tr>
+<tr><td><strong>Honest expectation-setting</strong></td><td>Requirement confirmations never imply instant magic; trust matters in construction</td></tr>
+</table></div>
+<hr>
+<h2 id="7-what-the-app-deliberately-leaves-out-02-Mobile-App-PRD">7. What the app deliberately leaves out</h2>
+<ul><li class="depth-0">iPhone-only features or design differences (parity with Android instead)</li>
+<li class="depth-0">Fingerprint/face login</li>
+<li class="depth-0">In-app voice calling</li>
+<li class="depth-0">Quick-reply directly from a notification (open the app instead)</li>
+</ul><hr>
+<h2 id="8-the-technical-bits-worth-knowing-for-engineers-02-Mobile-App-PRD">8. The technical bits worth knowing (for engineers)</h2>
+<ul><li class="depth-0"><strong>React Native</strong> with <strong>React Navigation</strong> (bottom tabs + a stack per tab).</li>
+<li class="depth-0"><strong>State:</strong> React Query for data from the backend, lightweight Zustand for on-screen UI state.</li>
+<li class="depth-0"><strong>Push:</strong> Firebase Cloud Messaging.</li>
+<li class="depth-0">🆕 <strong>Payments:</strong> the Razorpay React Native component (needs installing and native-linking on a dev machine before the payment screen activates — until then it shows &quot;payment not available in this build&quot;).</li>
+<li class="depth-0">🆕 <strong>Deep links:</strong> <code>nirmaan://pay/...</code> links are configured; the OS-level registration is a remaining native setup step, with the website&#x27;s pay page as a working fallback in the meantime.</li>
+</ul><hr>
+<h2 id="9-summary-for-a-co-founder-02-Mobile-App-PRD">9. Summary for a co-founder</h2>
+<p>The mobile app is four simple tabs — <strong>Home, Categories, My Truck, Profile</strong> — wrapped around one core action: <strong>post a requirement and get quotes</strong>. A buyer browses or searches, posts what they need, and picks a quote. A supplier gets leads and responds. In v2.1, that extends all the way to placing orders, paying, and tracking delivery. The whole thing is engineered to feel *smooth and trustworthy*, because in construction, trust is the product.</p></section>
+<section id="03-Web-App-PRD" class="prd-section"><h1 id="03--the-web-app-website-03-Web-App-PRD">03 — The Web App (Website)</h1>
+<h3 id="the-same-product-as-a-website--and-our-cheapest-customer-acquisition-channel-03-Web-App-PRD">The same product as a website — and our cheapest customer-acquisition channel</h3>
+<div class="callout"><strong>For non-technical readers:</strong> this is nirmaan.app in a browser. It does the same things as the phone app, but it exists for one extra, important reason: <strong>Google.</strong> When a contractor types &quot;tile wholesalers Dehradun&quot; into Google at 11pm, we want Nirmaan to show up — and only a real website can do that. The app can&#x27;t.</div>
+<hr>
+<h2 id="1-why-a-website-at-all-when-we-have-an-app-03-Web-App-PRD">1. Why a website at all, when we have an app?</h2>
+<p>Two reasons, both about getting customers cheaply:</p>
+<ol><li class="ordered"><strong>Search traffic (SEO).</strong> People search Google for local materials — &quot;plywood dealers Haridwar,&quot; &quot;bathroom fittings Dehradun.&quot; Those searches are free, intent-rich customers. A website can rank for them; an app cannot. This is a <strong>compounding</strong> channel: it gets better over time at no extra cost.</li>
+<li class="ordered"><strong>No-install entry.</strong> Some people will try us in a browser before committing to installing an app. The website lets them.</li>
+</ol><div class="diagram-wrap" id="03-Web-App-PRD__d0"><pre class="mermaid">flowchart LR
+    Search[&quot;🔍 &#x27;tiles dehradun&#x27;&lt;br/&gt;typed into Google&quot;] --&gt; Rank[&quot;Nirmaan website&lt;br/&gt;ranks &amp; appears&quot;]
+    Rank --&gt; Visit[&quot;Contractor visits&lt;br/&gt;(no install needed)&quot;]
+    Visit --&gt; Convert[&quot;Browses, posts a requirement,&lt;br/&gt;maybe installs the app&quot;]
+    style Search fill:#e3f2fd</pre></div>
+<hr>
+<h2 id="2-mobile-first-even-on-the-web-03-Web-App-PRD">2. &quot;Mobile-first,&quot; even on the web</h2>
+<div class="callout"><strong>In plain English:</strong> even though it&#x27;s a website, most visitors will be on a <strong>phone browser</strong>, not a laptop. So we design every page to look great on a narrow phone screen *first*, then let it stretch comfortably to desktop — not the other way around.</div>
+<p>The website is built to look and behave like the app on a phone, and reflow sensibly on bigger screens. We do <strong>not</strong> build a separate fancy desktop layout in v1 — that&#x27;s a later nicety.</p>
+<hr>
+<h2 id="3-how-you-move-around-the-website-03-Web-App-PRD">3. How you move around the website</h2>
+<div class="callout"><strong>In plain English:</strong> the exact same four sections as the app — Home, Categories, My Truck, Profile. On a phone browser they appear as a bottom bar (just like the app); on a desktop they appear as a top menu. Same four items, shown two ways.</div>
+<div class="diagram-wrap" id="03-Web-App-PRD__d1"><pre class="mermaid">flowchart LR
+    subgraph Desktop[&quot;On a computer (wide)&quot;]
+        H1[&quot;Home&quot;] --- H2[&quot;Categories&quot;] --- H3[&quot;My Truck&quot;] --- H4[&quot;Profile&quot;]
+    end
+    subgraph Mobile[&quot;On a phone (narrow)&quot;]
+        M1[&quot;Bottom bar — same 4 items, mirrors the app&quot;]
+    end</pre></div>
+<p>A nice efficiency: we keep <strong>one</strong> navigation list and render it two ways, rather than hand-building two menus that could drift apart.</p>
+<hr>
+<h2 id="4-the-pages-03-Web-App-PRD">4. The pages</h2>
+<div class="callout"><strong>In plain English:</strong> the website&#x27;s &quot;addresses&quot; (URLs) are designed to be clean and Google-friendly. Notice the category pages include the area name — that&#x27;s deliberate, so Google can connect a page to &quot;tiles dehradun&quot;-type searches.</div>
+<div class="table-wrap"><table>
+<tr><th>Web address</th><th>What it is</th></tr>
+<tr><td><code>/</code></td><td>Home</td></tr>
+<tr><td><code>/categories</code></td><td>Categories (search-first)</td></tr>
+<tr><td><code>/categories/tiles-dehradun</code></td><td>A category page, area baked into the address for SEO</td></tr>
+<tr><td><code>/truck</code></td><td>My Truck</td></tr>
+<tr><td><code>/profile</code></td><td>Profile (must be logged in)</td></tr>
+<tr><td><code>/login</code></td><td>Login (email code / Google)</td></tr>
+<tr><td><code>/rfq/new</code></td><td>Post a Requirement</td></tr>
+<tr><td><code>/rfq/[id]</code></td><td>A requirement&#x27;s status, leads, and quotes</td></tr>
+<tr><td><code>/help</code>, <code>/privacy</code>, <code>/terms</code></td><td>Info pages</td></tr>
+<tr><td>🆕 <code>/pay/[id]</code></td><td>A payment page (also the fallback for app payment links)</td></tr>
+</table></div>
+<hr>
+<h2 id="5-the-clever-bit-which-pages-are-built-for-google-and-which-for-speed-03-Web-App-PRD">5. The clever bit: which pages are built for Google, and which for speed</h2>
+<div class="callout"><strong>In plain English:</strong> there&#x27;s a trade-off in websites. Pages built &quot;on the server&quot; before they reach you are great for Google but a touch more work; pages built &quot;in your browser&quot; are snappy and private but invisible to Google. We pick the right approach per page based on whether Google needs to see it.</div>
+<div class="diagram-wrap" id="03-Web-App-PRD__d2"><pre class="mermaid">flowchart TD
+    subgraph ForGoogle[&quot;Built on the server — Google can read these&quot;]
+        Home[&quot;Home&quot;]
+        Cats[&quot;Categories&quot;]
+        CatPage[&quot;Category pages&lt;br/&gt;(the SEO surface)&quot;]
+    end
+    subgraph ForSpeed[&quot;Built in your browser — private &amp; fast&quot;]
+        Truck[&quot;My Truck&quot;]
+        Prof[&quot;Profile&quot;]
+        RFQ[&quot;Requirement pages&quot;]
+    end
+    subgraph Static[&quot;Pre-built once — rarely change&quot;]
+        Help[&quot;Help / Privacy / Terms&quot;]
+    end</pre></div>
+<div class="table-wrap"><table>
+<tr><th>Page</th><th>How it&#x27;s built</th><th>Why</th></tr>
+<tr><td>Home, Categories, Category pages</td><td>On the server (SSR)</td><td>These are the SEO surface — Google must read real content</td></tr>
+<tr><td>My Truck, Profile, Requirements</td><td>In the browser (behind login)</td><td>Personal, no SEO value, fastest to ship</td></tr>
+<tr><td>Help / Privacy / Terms</td><td>Pre-built once (static)</td><td>They barely change</td></tr>
+</table></div>
+<p>On category pages we also add invisible &quot;structured data&quot; tags that tell Google &quot;this is a product / local business&quot; — small effort, real ranking payoff.</p>
+<hr>
+<h2 id="6-one-cart-across-web-and-app-03-Web-App-PRD">6. One cart across web and app</h2>
+<div class="callout"><strong>In plain English:</strong> if you add tiles to My Truck on the website at work, then open the phone app on the way home, <strong>the same items are there.</strong> Both the website and the app talk to the same brain and the same cart — there&#x27;s only ever one truck per person.</div>
+<hr>
+<h2 id="7-keeping-the-brand-consistent-03-Web-App-PRD">7. Keeping the brand consistent</h2>
+<p>The website shares the same colours, spacing, and visual language as the app — by design, because looking consistent across web and app is part of feeling trustworthy. Where the tooling allows, the web and app even share some underlying code (the API client, validation rules) so they stay in lockstep.</p>
+<hr>
+<h2 id="8-the-buyer--supplier-journeys-on-web-03-Web-App-PRD">8. The buyer &amp; supplier journeys on web</h2>
+<p>These are the same journeys as the mobile app (see document 02), simply rendered as web pages. The one web-specific adaptation: since a browser can&#x27;t auto-read an SMS/email code, the login screen makes &quot;paste your code&quot; easy and prominent.</p>
+<div class="diagram-wrap" id="03-Web-App-PRD__d3"><pre class="mermaid">flowchart LR
+    Land[&quot;Land from Google search&quot;] --&gt; Browse[&quot;Browse category page&lt;br/&gt;(server-rendered, indexed)&quot;]
+    Browse --&gt; Act{&quot;Act&quot;}
+    Act --&gt;|&quot;Post need&quot;| RFQ[&quot;Post Requirement&quot;]
+    Act --&gt;|&quot;Save items&quot;| Truck[&quot;My Truck&lt;br/&gt;(syncs with app)&quot;]
+    RFQ --&gt; Quotes[&quot;Get quotes&quot;]
+    Truck --&gt; Quotes
+    Quotes --&gt; Done[&quot;Accept → call / 🆕 order &amp; pay&quot;]</pre></div>
+<hr>
+<h2 id="9-what-the-website-deliberately-leaves-out-03-Web-App-PRD">9. What the website deliberately leaves out</h2>
+<ul><li class="depth-0">A full, separate desktop-optimised redesign (the mobile-first layout simply stretches for now)</li>
+<li class="depth-0">Installable &quot;app-like&quot; website (PWA)</li>
+<li class="depth-0">Handling payments on our own servers (Razorpay handles the money)</li>
+</ul><hr>
+<h2 id="10-the-technical-bits-worth-knowing-for-engineers-03-Web-App-PRD">10. The technical bits worth knowing (for engineers)</h2>
+<ul><li class="depth-0">Built with <strong>Next.js</strong>; SEO-critical pages use <strong>server-side rendering / server components</strong>, personal pages are client-rendered behind auth, info pages are static.</li>
+<li class="depth-0">Designed at <strong>375px width first</strong>, progressively enhanced upward.</li>
+<li class="depth-0">Shares design tokens and (where set up) a <code>packages/shared</code> workspace with the React Native app.</li>
+<li class="depth-0">🆕 The <code>/pay/[id]</code> route doubles as the fallback target for the app&#x27;s payment deep links, redirecting to Razorpay&#x27;s hosted page.</li>
+</ul><div class="callout"><strong>A small known item from the backlog:</strong> the &quot;not in your area yet&quot; capture screen and a couple of catalog-card display fixes were flagged for tidy-up; they don&#x27;t affect the core flows. See the pending-review list.</div>
+<hr>
+<h2 id="11-summary-for-a-co-founder-03-Web-App-PRD">11. Summary for a co-founder</h2>
+<p>The website is the app&#x27;s twin, with one job the app can&#x27;t do: <strong>win free customers from Google.</strong> It&#x27;s designed phone-first, shares the same brain and the same cart as the app, and carefully renders its public pages so search engines can index &quot;material + city&quot; searches. Think of the app as where loyal users live, and the website as the wide front door that Google sends strangers through.</p></section>
+<section id="04-Admin-Panel-PRD" class="prd-section"><h1 id="04--the-admin-panel-04-Admin-Panel-PRD">04 — The Admin Panel</h1>
+<h3 id="your-control-room-for-running-the-entire-marketplace-04-Admin-Panel-PRD">Your control room for running the entire marketplace</h3>
+<div class="callout"><strong>For non-technical readers:</strong> this is the private dashboard that <strong>you and your team</strong> use — never customers. It&#x27;s how you approve suppliers, switch on new neighbourhoods, see what&#x27;s selling, and fix problems, all without an engineer and without ever touching the raw database. If the apps are the shopfront, the admin panel is the back office.</div>
+<hr>
+<h2 id="1-what-the-admin-panel-is-for-04-Admin-Panel-PRD">1. What the admin panel is for</h2>
+<p>You said you wanted to &quot;manage each and everything.&quot; This panel turns that into a concrete, bounded set of tools — deliberately scoped so it doesn&#x27;t quietly become a second giant product to build. Its purpose: <strong>let you operate the marketplace without ever editing the database by hand.</strong></p>
+<p>It&#x27;s a separate website from the customer-facing one, for good reasons:</p>
+<ul><li class="depth-0"><strong>Different audience:</strong> you and staff, not buyers and suppliers.</li>
+<li class="depth-0"><strong>Different login:</strong> email + password restricted to an approved list — never the public code-login.</li>
+<li class="depth-0"><strong>Different look:</strong> desktop-first, dense tables (you&#x27;re at a desk, doing operations).</li>
+<li class="depth-0"><strong>Safety:</strong> a bug in the admin panel can never take down the customer apps, because they&#x27;re separate.</li>
+</ul><hr>
+<h2 id="2-the-map-of-the-admin-panel-04-Admin-Panel-PRD">2. The map of the admin panel</h2>
+<div class="diagram-wrap" id="04-Admin-Panel-PRD__d0"><pre class="mermaid">flowchart TD
+    Login[&quot;🔒 Admin Login&lt;br/&gt;(approved emails only)&quot;] --&gt; Dash[&quot;Dashboard&quot;]
+    Dash --&gt; Users[&quot;Users&quot;]
+    Dash --&gt; Suppliers[&quot;Suppliers &amp; Verification&quot;]
+    Dash --&gt; Cats[&quot;Categories&quot;]
+    Dash --&gt; Areas[&quot;Serviceable Areas&lt;br/&gt;(open new pincodes)&quot;]
+    Dash --&gt; RFQs[&quot;Requirements &amp; Leads&quot;]
+    Dash --&gt; Catalog[&quot;Catalog Moderation&quot;]
+    Dash --&gt; Content[&quot;Help / Policy Content&quot;]
+    Dash --&gt; Broadcast[&quot;Notification Broadcast&quot;]
+    Dash --&gt; Orders[&quot;🆕 Orders &amp; Payments&quot;]
+    Dash --&gt; Analytics[&quot;🆕 Growth Analytics&quot;]
+    style Orders fill:#d4edda
+    style Analytics fill:#d4edda</pre></div>
+<hr>
+<h2 id="3-section-by-section-in-plain-language-04-Admin-Panel-PRD">3. Section by section, in plain language</h2>
+<h3 id="31-dashboard--your-morning-glance-04-Admin-Panel-PRD">3.1 Dashboard — your morning glance</h3>
+<div class="callout"><strong>In plain English:</strong> the numbers that actually matter for a young marketplace — not vanity stats. The single most important one is <strong>&quot;Requirements with zero matches.&quot;</strong></div>
+<div class="table-wrap"><table>
+<tr><th>Number shown</th><th>Why you watch it</th></tr>
+<tr><td>Active requirements (open / matched / quoted)</td><td>Is the demand engine working?</td></tr>
+<tr><td>Leads sent vs. viewed vs. quoted (last 7 days)</td><td>How responsive are suppliers? (your speed advantage)</td></tr>
+<tr><td>New users / new suppliers (last 7 days)</td><td>Growth</td></tr>
+<tr><td><strong>Requirements with zero matches</strong></td><td><strong>The most important early metric</strong> — each one is a gap (a missing supplier or category in an area) you should personally go fill</td></tr>
+</table></div>
+<h3 id="32-users-04-Admin-Panel-PRD">3.2 Users</h3>
+<div class="callout">A searchable table of everyone: name, contact, role, area, signup date, last active. You can view a person, manually flip them to &quot;supplier,&quot; or <strong>suspend</strong> an account (which sets a flag the login checks — it doesn&#x27;t delete their history).</div>
+<h3 id="33-suppliers--verification--where-trust-is-created-04-Admin-Panel-PRD">3.3 Suppliers &amp; Verification — where trust is created</h3>
+<div class="callout"><strong>In plain English:</strong> this is where you award the <strong>&quot;Verified&quot; badge</strong> that buyers rely on. In v1, verification is <strong>manual — done by you, by eye.</strong> That&#x27;s intentional: you don&#x27;t build an automated document-checking system before you&#x27;ve personally verified your first ~50 suppliers and learned what actually needs checking.</div>
+<div class="table-wrap"><table>
+<tr><th>What you see</th><th>What you can do</th></tr>
+<tr><td>Business name, GST number, phone</td><td>Review</td></tr>
+<tr><td>Uploaded documents</td><td>View</td></tr>
+<tr><td>Verified toggle</td><td><strong>Manually approve</strong> — your judgment, not a robot&#x27;s</td></tr>
+<tr><td>Service areas</td><td>Edit which pincodes they cover</td></tr>
+<tr><td>Categories</td><td>Edit which materials they list under</td></tr>
+</table></div>
+<h3 id="34-categories-04-Admin-Panel-PRD">3.4 Categories</h3>
+<div class="callout">Create and arrange the material categories (name, icon, order on the grid). Keep it simple — a flat list or one level of nesting — because elaborate category trees are wasted effort before you have real product volume.</div>
+<h3 id="35-serviceable-areas--your-launch-lever-04-Admin-Panel-PRD">3.5 Serviceable Areas — your launch lever</h3>
+<div class="callout"><strong>In plain English:</strong> this is the literal control for &quot;open Nirmaan in a new neighbourhood.&quot; Adding and activating a pincode here makes it instantly live for buyers and suppliers — <strong>no engineer, no app update.</strong> This single screen *is* your geographic growth strategy.</div>
+<div class="table-wrap"><table>
+<tr><th>Action</th><th>Effect</th></tr>
+<tr><td>Add a pincode</td><td>Added, switched <strong>off</strong> by default</td></tr>
+<tr><td>Activate</td><td>Buyers can now post requirements there; suppliers can declare service</td></tr>
+<tr><td>Deactivate</td><td>Stops new requirements without deleting any history</td></tr>
+<tr><td>View map</td><td>See your live coverage (useful when deciding where to expand)</td></tr>
+</table></div>
+<h3 id="36-requirements--leads--your-manual-hustle-queue-04-Admin-Panel-PRD">3.6 Requirements &amp; Leads — your manual-hustle queue</h3>
+<div class="callout"><strong>In plain English:</strong> a table of every requirement and its lead/quote counts. <strong>Zero-match requirements are surfaced loudly</strong> — that&#x27;s your personal to-do list. When the system can&#x27;t find a supplier for a buyer, you go find one by hand. The panel makes that hustle *visible and trackable* instead of living in your head.</div>
+<h3 id="37-catalog-moderation-04-Admin-Panel-PRD">3.7 Catalog Moderation</h3>
+<div class="callout">A list of every product suppliers have listed. You can <strong>deactivate</strong> a bad listing (wrong price, bad photo, spam) yourself, without waiting for the supplier.</div>
+<h3 id="38-help---policy-content-04-Admin-Panel-PRD">3.8 Help / Policy Content</h3>
+<div class="callout">A simple editor for the Help, Privacy Policy, and Terms pages that the apps link to. Updating your privacy policy is an edit here — <strong>not a code release.</strong></div>
+<h3 id="39-notification-broadcast-04-Admin-Panel-PRD">3.9 Notification Broadcast</h3>
+<div class="callout">Write a message, pick who gets it (everyone / all suppliers in area X / all buyers), send. For announcing a new area opening or a policy change without involving engineering.</div>
+<h3 id="310--orders--payments-04-Admin-Panel-PRD">3.10 🆕 Orders &amp; Payments</h3>
+<div class="callout"><strong>In plain English:</strong> once real orders exist, this is where your team oversees them — see every order and its status, see payments and the commission split, handle fulfilment progress, and manage refunds and disputes by hand. There&#x27;s no separate payment-control screen to build: for the money itself, you use <strong>Razorpay&#x27;s own dashboard.</strong></div>
+<h3 id="311--growth-analytics-growth-intelligence-04-Admin-Panel-PRD">3.11 🆕 Growth Analytics (&quot;Growth Intelligence&quot;)</h3>
+<div class="callout"><strong>In plain English:</strong> the dashboards that tell you where to grow. The centrepiece, <strong>&quot;Demand by Area,&quot;</strong> ranks pincodes by how much demand they&#x27;re generating — *including pincodes you don&#x27;t serve yet* — with a shortlist of where to expand next. This is the data-driven version of the zero-match signal: it doesn&#x27;t just show gaps, it shows where the biggest gaps are.</div>
+<hr>
+<h2 id="4-the-complete-admin-journey-04-Admin-Panel-PRD">4. The complete ADMIN journey</h2>
+<div class="diagram-wrap" id="04-Admin-Panel-PRD__d1"><pre class="mermaid">flowchart TD
+    A[&quot;Log in (approved email)&quot;] --&gt; B[&quot;Glance at dashboard&quot;]
+    B --&gt; C{&quot;What needs me today?&quot;}
+    C --&gt;|&quot;New supplier signed up&quot;| D[&quot;Review &amp; verify them ✅&quot;]
+    C --&gt;|&quot;Zero-match requirements&quot;| E[&quot;Find a supplier by hand,&lt;br/&gt;or note the coverage gap&quot;]
+    C --&gt;|&quot;Ready to expand&quot;| F[&quot;Activate a new pincode&quot;]
+    C --&gt;|&quot;Bad listing reported&quot;| G[&quot;Deactivate the listing&quot;]
+    C --&gt;|&quot;Announcement&quot;| H[&quot;Broadcast a notification&quot;]
+    C --&gt;|&quot;🆕 Order issue&quot;| I[&quot;Check order, resolve dispute,&lt;br/&gt;refund via Razorpay&quot;]:::v2
+    C --&gt;|&quot;Planning growth&quot;| J[&quot;🆕 Read Demand-by-Area,&lt;br/&gt;pick next pincode&quot;]:::v2
+    classDef v2 fill:#d4edda,stroke:#28a745</pre></div>
+<hr>
+<h2 id="5-who-can-log-in-and-how-access-works-04-Admin-Panel-PRD">5. Who can log in, and how access works</h2>
+<div class="callout"><strong>In plain English:</strong> only people on an approved email list can get in, with email + password (never the public code-login). In v1 there&#x27;s effectively one role — you. Finer permissions (e.g. a support hire who can view but not edit) come later, once you actually hire someone.</div>
+<p>🆕 <strong>v2.1</strong> introduced real admin accounts with <strong>four roles</strong> — enough structure for a small team without the complexity of a fine-grained permission matrix (which was deliberately left out).</p>
+<hr>
+<h2 id="6-what-the-admin-panel-deliberately-leaves-out-04-Admin-Panel-PRD">6. What the admin panel deliberately leaves out</h2>
+<ul><li class="depth-0">Heavy BI dashboards beyond the metrics above (v1) — though v2.1 added the focused Growth Analytics</li>
+<li class="depth-0">Automatic supplier document verification (you verify by hand on purpose)</li>
+<li class="depth-0">A fine-grained per-action permission matrix (the handful of roles suffice)</li>
+<li class="depth-0">Bulk spreadsheet import/export (add only if manual entry becomes a real bottleneck)</li>
+<li class="depth-0">A parallel payment-control UI (use Razorpay&#x27;s dashboard for the money)</li>
+</ul><hr>
+<h2 id="7-the-technical-bits-worth-knowing-for-engineers-04-Admin-Panel-PRD">7. The technical bits worth knowing (for engineers)</h2>
+<ul><li class="depth-0">Built with <strong>Next.js</strong>, desktop-first, data-dense tables.</li>
+<li class="depth-0">Auth is an <strong>email allowlist</strong> (env config in early phases; a real <code>admin_users</code> table with roles in v2.1) — never the public OTP flow.</li>
+<li class="depth-0">All data flows through the same backend brain as the apps; the panel has no special database access.</li>
+</ul><hr>
+<h2 id="8-summary-for-a-co-founder-04-Admin-Panel-PRD">8. Summary for a co-founder</h2>
+<p>The admin panel is your <strong>operating cockpit</strong>. From one screen you verify suppliers (creating the trust buyers rely on), switch on new pincodes (your entire geographic growth strategy, no engineer needed), and watch the one metric that matters most early — <strong>requirements that found nobody</strong> — so you can personally close those gaps. In v2.1 it also became your window onto orders, payments, and a real <strong>Demand-by-Area</strong> map showing exactly where to expand next. It&#x27;s deliberately scoped to be a control room, not a second product.</p></section>
+  </main>
+
+</div>
+
+<!-- back to top -->
+<button class="back-top" id="backTop" onclick="scrollTop()" title="Back to top">↑</button>
+
+<script>
+// ── mermaid ─────────────────────────────────────────────────
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    fontFamily: 'Inter, Arial, sans-serif',
+    fontSize: '14px',
+    primaryColor: '#eef2ff',
+    primaryBorderColor: '#6366f1',
+    primaryTextColor: '#1e293b',
+    lineColor: '#64748b',
+    secondaryColor: '#f8fafc',
+    tertiaryColor: '#dcfce7',
+    tertiaryBorderColor: '#86efac',
+    edgeLabelBackground: '#ffffff',
+    clusterBkg: '#f8faff',
+    clusterBorder: '#c7d2fe',
+  },
+  flowchart: { curve: 'basis', htmlLabels: true },
+  er: { useMaxWidth: true },
+  sequence: { useMaxWidth: true },
+});
+
+// ── section switching ────────────────────────────────────────
+let activeSection = '00-Nirmaan-Master-Overview';
+
+function activateSection(key, e) {
+  if (e) { e.preventDefault(); }
+  activeSection = key;
+  // hide all sections
+  document.querySelectorAll('.prd-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(key).classList.add('active');
+  // update sidebar active state
+  document.querySelectorAll('.nav-item').forEach(li => {
+    li.classList.toggle('active', li.dataset.section === key);
+  });
+  // update mobile tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  const sectionOrder = ['00-Nirmaan-Master-Overview','01-Backend-PRD','02-Mobile-App-PRD','03-Web-App-PRD','04-Admin-Panel-PRD'];
+  const idx = sectionOrder.indexOf(key);
+  const tabs = document.querySelectorAll('.tab-btn');
+  if (tabs[idx]) tabs[idx].classList.add('active');
+  // scroll top
+  document.getElementById('mainContent').scrollTop = 0;
+  // close sidebar on mobile
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function switchSection(key, btn) {
+  activateSection(key, null);
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── sidebar toggle (mobile) ──────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── scroll & progress bar ────────────────────────────────────
+function onMainScroll() {
+  const mc = document.getElementById('mainContent');
+  const pct = (mc.scrollTop / (mc.scrollHeight - mc.clientHeight)) * 100;
+  document.getElementById('readBar').style.width = Math.min(pct, 100) + '%';
+  document.getElementById('backTop').classList.toggle('visible', mc.scrollTop > 300);
+}
+function scrollTop() {
+  document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── search ───────────────────────────────────────────────────
+function doSearch(q) {
+  document.getElementById('searchClear').style.display = q ? 'block' : 'none';
+  const lower = q.toLowerCase().trim();
+  document.querySelectorAll('.nav-item').forEach(li => {
+    if (!lower) { li.style.display = ''; return; }
+    const text = li.textContent.toLowerCase();
+    li.style.display = text.includes(lower) ? '' : 'none';
+  });
+  // also highlight in active section
+  const active = document.querySelector('.prd-section.active');
+  if (!active) return;
+  if (!lower) { active.querySelectorAll('mark.hl').forEach(m => { m.outerHTML = m.innerHTML; }); return; }
+}
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  doSearch('');
+}
+
+// ── anchor links for subnav ──────────────────────────────────
+document.querySelectorAll('.subnav-link').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const id = a.getAttribute('href').slice(1);
+    // find the section this anchor belongs to
+    const el = document.getElementById(id);
+    if (!el) return;
+    const section = el.closest('.prd-section');
+    if (section && !section.classList.contains('active')) {
+      activateSection(section.id, null);
+    }
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  });
+});
+
+// ── init first section active ────────────────────────────────
+document.querySelector('.nav-item[data-section="00-Nirmaan-Master-Overview"]').classList.add('active');
+</script>
+</body>
+</html>
