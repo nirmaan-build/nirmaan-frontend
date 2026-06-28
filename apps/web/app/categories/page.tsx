@@ -10,8 +10,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function CategoriesPage() {
   const locale = serverLocale();
+  // Categories are semi-static — cache for 5 min at the data layer.
   const categories =
-    (await serverApi<Category[]>(`/categories?locale=${locale}`)) ?? [];
+    (await serverApi<Category[]>(`/categories?locale=${locale}`, { revalidate: 300 })) ?? [];
 
   return (
     <>

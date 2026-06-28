@@ -17,13 +17,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [drawer, setDrawer] = useState(false);
 
+  // Read auth/role/theme once on mount — not on every route change.
+  // Repeating these setState calls on pathname was triggering 3 cascading
+  // re-renders of the entire shell on every navigation.
   useEffect(() => {
     setAuthed(Boolean(getToken()));
     setRoleState(getRole());
     const current = document.documentElement.getAttribute('data-theme');
     if (current === 'light' || current === 'dark') setTheme(current);
-  }, [pathname]);
+  }, []);
 
+  // Close mobile drawer on route change only.
   useEffect(() => {
     setDrawer(false);
   }, [pathname]);

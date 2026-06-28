@@ -22,7 +22,8 @@ export default async function CategoryPage({
   const categoryId = params.slug;
 
   const [categories, catalog] = await Promise.all([
-    serverApi<Category[]>(`/categories?locale=${locale}`),
+    // Categories are semi-static — cache for 5 min at the data layer.
+    serverApi<Category[]>(`/categories?locale=${locale}`, { revalidate: 300 }),
     pincode
       ? serverApi<CatalogSearchResult>(
           `/catalog?category=${categoryId}&pincode=${pincode}`,

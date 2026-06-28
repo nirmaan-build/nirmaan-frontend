@@ -16,8 +16,11 @@ export default async function HomePage() {
   const pincode = serverPincode();
   const authed = isAuthed();
 
+  // Categories are semi-static — cache for 5 min at the data layer.
+  // The page stays force-dynamic (user-personalized popular items), but
+  // the categories list won't cause a backend round-trip on every load.
   const categories =
-    (await serverApi<Category[]>(`/categories?locale=${locale}`)) ?? [];
+    (await serverApi<Category[]>(`/categories?locale=${locale}`, { revalidate: 300 })) ?? [];
   const popular = pincode
     ? await serverApi<CatalogSearchResult>(`/catalog?pincode=${pincode}`)
     : null;
