@@ -60,7 +60,8 @@
     "viewAll": "View all",
     "noItems": "Nothing here yet for your area",
     "popularEmptyTitle": "Nothing popular yet",
-    "popularEmptyBody": "No items listed in your area right now. Post a requirement and suppliers will reach out."
+    "popularEmptyBody": "No items listed in your area right now. Post a requirement and suppliers will reach out.",
+    "myRequirements": "My Requirements"
   },
   "categories": {
     "title": "Categories",
@@ -110,6 +111,7 @@
     "requestPlaceholder": "e.g. katta",
     "requestCta": "Request this unit",
     "requested": "Thanks — we'll review it. Pick the closest unit to continue.",
+    "alreadyExists": "This unit already exists — please check the unit list above and select it.",
     "empty": "No units available"
   },
   "notInArea": {
@@ -278,5 +280,19 @@
     "QUOTED": "Quoted",
     "CLOSED": "Closed",
     "EXPIRED": "Expired"
+  },
+  "supplier": {
+    "myStore": "My Store",
+    "myStoreSub": "Your listings & orders",
+    "listings": "My Listings",
+    "listingsEmpty": "No listings yet. Add items through the supplier catalog.",
+    "orders": "Incoming Orders",
+    "ordersEmpty": "No orders yet",
+    "active": "Active",
+    "inactive": "Inactive",
+    "confirmOrder": "Confirm",
+    "cancelOrder": "Cancel",
+    "orderFrom": "From {buyer}",
+    "orderQty": "{qty} items"
   }
 }

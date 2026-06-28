@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { MapPin, ChevronDown, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { MapPin, ChevronDown, User as UserIcon, ArrowLeft, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { AreaSheet } from './AreaSheet';
 import { NotificationBell } from './NotificationBell';
 import { useHeaderTitle } from './HeaderTitle';
 import { useActiveAreas, useUpdateArea } from '@/lib/queries';
 import { useT } from '@/lib/i18n-client';
-import { getUser, setUser as setUserCookie } from '@/lib/cookies';
+import { getUser, setUser as setUserCookie, USER_UPDATED_EVENT } from '@/lib/cookies';
 import type { User } from '@/lib/types';
 
 // The four bottom-tab routes show the brand header; everything else is a sub-page.
@@ -34,7 +34,10 @@ export function MobileHeader() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setUser(getUser());
+    const sync = () => setUser(getUser());
+    sync();
+    window.addEventListener(USER_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(USER_UPDATED_EVENT, sync);
   }, []);
 
   if (NO_HEADER.includes(pathname)) return null;
@@ -48,6 +51,9 @@ export function MobileHeader() {
           <ArrowLeft size={22} />
         </button>
         <span className="m-subtitle">{title ?? mapped}</span>
+        <button className="icon-btn" onClick={() => router.refresh()} aria-label="Refresh" style={{ marginLeft: 'auto' }}>
+          <RefreshCcw size={18} />
+        </button>
       </header>
     );
   }
@@ -93,11 +99,12 @@ export function MobileHeader() {
         )}
       </div>
 
-      {user ? (
-        <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center' }}>
-          <NotificationBell />
-        </span>
-      ) : null}
+      <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <button className="icon-btn" onClick={() => router.refresh()} aria-label="Refresh">
+          <RefreshCcw size={18} />
+        </button>
+        {user ? <NotificationBell /> : null}
+      </span>
 
       <AreaSheet
         open={open}
@@ -123,5 +130,6 @@ function subTitle(pathname: string, t: (k: string) => string): string {
   if (pathname === '/terms') return t('content.terms');
   if (pathname === '/popular') return t('home.popularNearYou');
   if (pathname.startsWith('/categories/')) return t('categories.title');
+  if (pathname.startsWith('/supplier')) return t('supplier.myStore');
   return '';
 }

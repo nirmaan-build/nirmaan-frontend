@@ -3,6 +3,7 @@ import { Package } from 'lucide-react';
 import { st } from '@/lib/i18n-server';
 import { money } from '@/lib/format';
 import { SearchBox } from './components/SearchBox';
+import { MyRequirements } from './components/MyRequirements';
 import type { Category, CatalogSearchResult } from '@/lib/types';
 import { serverApi, serverLocale, serverPincode, isAuthed } from '@/lib/serverApi';
 
@@ -86,6 +87,9 @@ export default async function HomePage() {
           </div>
         ))
       )}
+
+      {/* My Requirements — client component, only visible when logged in */}
+      <MyRequirements />
     </>
   );
 }

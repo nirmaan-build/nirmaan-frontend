@@ -34,12 +34,21 @@ function PostRfqForm() {
   const [quantity, setQuantity] = useState('');
   const [unitId, setUnitId] = useState('');
   const [newUnit, setNewUnit] = useState('');
+  const [unitExistsWarning, setUnitExistsWarning] = useState(false);
   const [pincode, setPincode] = useState(getUser()?.primaryPincode ?? '');
 
   if (!ready) return <p className="muted">{t('common.loading')}</p>;
 
+  const quantityNum = parseFloat(quantity);
   const canSubmit =
-    categoryId && description.trim() && Number(quantity) > 0 && unitId && pincode;
+    categoryId &&
+    description.trim() &&
+    quantity !== '' &&
+    !isNaN(quantityNum) &&
+    isFinite(quantityNum) &&
+    quantityNum > 0 &&
+    unitId &&
+    pincode;
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -48,7 +57,7 @@ function PostRfqForm() {
         categoryId,
         pincode,
         description: description.trim(),
-        quantity: Number(quantity),
+        quantity: quantityNum,
         unitId,
       });
       router.replace(`/rfq/${rfq.id}`);
@@ -62,6 +71,15 @@ function PostRfqForm() {
   const requestNewUnit = async () => {
     const raw = newUnit.trim();
     if (!raw) return;
+    // Guard: don't accept a name that already exists in the units list.
+    const alreadyExists = (units.data ?? []).some(
+      (u) => u.name.toLowerCase() === raw.toLowerCase(),
+    );
+    if (alreadyExists) {
+      setUnitExistsWarning(true);
+      return; // no request sent to backend
+    }
+    setUnitExistsWarning(false);
     try {
       await requestUnit.mutateAsync({ rawText: raw, context: 'rfq' });
     } catch {
@@ -97,9 +115,16 @@ function PostRfqForm() {
           <div>
             <label>{t('postRfq.quantityLabel')}</label>
             <input
-              inputMode="numeric"
+              inputMode="decimal"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={(e) => {
+                // Allow digits and at most one decimal point; cap at 10 chars.
+                const v = e.target.value
+                  .replace(/[^0-9.]/g, '')        // strip non-numeric except '.'
+                  .replace(/^(\d*\.?\d*).*$/, '$1') // keep only first decimal
+                  .slice(0, 10);
+                setQuantity(v);
+              }}
               placeholder="0"
             />
           </div>
@@ -117,23 +142,37 @@ function PostRfqForm() {
         </div>
 
         {/* Request a new unit — informational only, never blocks (§3.8.1). */}
-        <div className="row" style={{ marginTop: 8 }}>
-          <div style={{ flex: 1 }}>
-            <label>{t('units.requestNew')}</label>
-            <input
-              value={newUnit}
-              onChange={(e) => setNewUnit(e.target.value)}
-              placeholder={t('units.requestPlaceholder')}
-            />
+        <div style={{ marginTop: 8 }}>
+          <div className="row">
+            <div style={{ flex: 1 }}>
+              <label>{t('units.requestNew')}</label>
+              <input
+                value={newUnit}
+                onChange={(e) => { setNewUnit(e.target.value); setUnitExistsWarning(false); }}
+                placeholder={t('units.requestPlaceholder')}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={requestNewUnit}
+              disabled={!newUnit.trim() || requestUnit.isPending}
+              style={{ alignSelf: 'flex-end' }}
+            >
+              {t('units.requestCta')}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={requestNewUnit}
-            disabled={!newUnit.trim() || requestUnit.isPending}
-            style={{ alignSelf: 'flex-end' }}
-          >
-            {t('units.requestCta')}
-          </button>
+          {unitExistsWarning && (
+            <p style={{
+              margin: '6px 0 0',
+              fontSize: 13,
+              color: 'var(--primary)',
+              background: 'var(--primary-muted)',
+              borderRadius: 'var(--r-sm)',
+              padding: '8px 12px',
+            }}>
+              {t('units.alreadyExists')}
+            </p>
+          )}
         </div>
 
         <label>{t('postRfq.areaLabel')}</label>

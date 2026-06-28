@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HardHat, HelpCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { HardHat, HelpCircle, PanelLeftClose, PanelLeftOpen, Store } from 'lucide-react';
 import { NAV } from '@/lib/nav';
 import { useT } from '@/lib/i18n-client';
+import { getUser } from '@/lib/cookies';
 
 /**
  * Desktop left sidebar (QuickMart-style chrome) — visible only at >= lg.
@@ -16,6 +17,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const t = useT();
   const [collapsed, setCollapsed] = useState(false);
+  const user = getUser();
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
@@ -53,6 +55,18 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* My Store — only when user is a supplier */}
+        {user?.isSupplier ? (
+          <Link
+            href="/supplier"
+            className={`sidebar-item${isActive('/supplier') ? ' active' : ''}`}
+            title={t('supplier.myStore')}
+          >
+            <Store size={19} />
+            <span className="sidebar-label">{t('supplier.myStore')}</span>
+          </Link>
+        ) : null}
       </nav>
 
       <div className="sidebar-foot">

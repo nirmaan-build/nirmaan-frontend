@@ -111,7 +111,14 @@ export default function ProfilePage() {
             subtitle={t('profile.becomeSupplierSub')}
             onClick={becomeSupplier}
           />
-        ) : null}
+        ) : (
+          <SettingsRow
+            Icon={Store}
+            title={t('supplier.myStore')}
+            subtitle={t('supplier.myStoreSub')}
+            href="/supplier"
+          />
+        )}
         <SettingsRow
           Icon={ClipboardList}
           title={t('profile.myRequirements')}

@@ -51,8 +51,15 @@ export function setSession(s: {
   setCookie(COOKIES.user, JSON.stringify(s.user));
 }
 
+// Fired whenever the user cookie is updated so headers (Topbar, MobileHeader)
+// can re-read the cookie without needing a full page reload.
+export const USER_UPDATED_EVENT = 'nirmaan:user-updated';
+
 export function setUser(user: User): void {
   setCookie(COOKIES.user, JSON.stringify(user));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(USER_UPDATED_EVENT));
+  }
 }
 
 export function setAccessToken(token: string): void {

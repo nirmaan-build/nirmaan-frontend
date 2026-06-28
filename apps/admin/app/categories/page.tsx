@@ -29,7 +29,8 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState('');
   const [hindiName, setHindiName] = useState('');
-  const [sortOrder, setSortOrder] = useState('0');
+  // nextSort is fetched from backend; null = loading, undefined = fetch failed.
+  const [nextSort, setNextSort] = useState<number | null | undefined>(null);
   const [iconUrl, setIconUrl] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [busy, setBusy] = useState(false);
@@ -54,6 +55,15 @@ export default function CategoriesPage() {
     [router],
   );
 
+  const loadNextSort = useCallback(async () => {
+    try {
+      const r = await api<{ sortOrder: number }>('/admin/categories/next-sort-order');
+      setNextSort(r.sortOrder);
+    } catch {
+      setNextSort(undefined); // failed — show manual fallback
+    }
+  }, []);
+
   const load = useCallback(async () => {
     try {
       setCategories(await api<Category[]>('/admin/categories'));
@@ -68,7 +78,8 @@ export default function CategoriesPage() {
       return;
     }
     void load();
-  }, [router, load]);
+    void loadNextSort();
+  }, [router, load, loadNextSort]);
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -78,7 +89,7 @@ export default function CategoriesPage() {
         method: 'POST',
         body: JSON.stringify({
           name: name.trim(),
-          sortOrder: Number(sortOrder) || 0,
+          // Omit sortOrder — backend auto-assigns via nextSortOrder() (max+1).
           iconUrl: iconUrl.trim() || undefined,
           coverImageUrl: coverImageUrl.trim() || undefined,
           translations: hindiName.trim()
@@ -88,11 +99,11 @@ export default function CategoriesPage() {
       });
       setName('');
       setHindiName('');
-      setSortOrder('0');
       setIconUrl('');
       setCoverImageUrl('');
       toast.success('Category added');
-      await load();
+      // Reload list and refresh the next sort order preview.
+      await Promise.all([load(), loadNextSort()]);
     } catch (err) {
       handleError(err);
     } finally {
@@ -178,11 +189,15 @@ export default function CategoriesPage() {
               />
             </div>
             <div style={{ maxWidth: 130 }}>
-              <label>Sort order</label>
+              <label title="Auto-assigned by the backend (max existing + 1)">
+                Sort order (auto)
+              </label>
               <input
                 type="number"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
+                value={nextSort !== null && nextSort !== undefined ? nextSort : ''}
+                disabled
+                placeholder={nextSort === null ? 'Loading…' : 'Error'}
+                style={{ opacity: 0.65, cursor: 'not-allowed' }}
               />
             </div>
           </div>

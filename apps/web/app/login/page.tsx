@@ -40,7 +40,7 @@ export default function LoginPage() {
       window.location.assign(s.user.profileComplete ? '/' : '/onboarding');
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t('auth.wrongCode'));
-      setCode('');
+      // Don't clear code — user can see what they typed and correct it.
     }
   };
 

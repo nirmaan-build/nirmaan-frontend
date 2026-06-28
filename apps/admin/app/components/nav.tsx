@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   PhoneCall,
   TrendingUp,
+  ClipboardList,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -30,6 +31,7 @@ export const NAV: NavItem[] = [
   { href: '/areas', label: 'Serviceable Areas', icon: MapPin },
   { href: '/suppliers', label: 'Suppliers', icon: Store },
   { href: '/catalog', label: 'Catalog', icon: PackageSearch },
+  { href: '/rfqs', label: 'Requirements', icon: ClipboardList },
   { href: '/callbacks', label: 'Callback Requests', icon: PhoneCall },
   { href: '/disputes', label: 'Disputes', icon: ShieldAlert },
   { href: '/broadcast', label: 'Broadcast', icon: Megaphone },

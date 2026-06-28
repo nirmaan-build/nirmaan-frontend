@@ -243,7 +243,12 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => api<{ count: number }>('/notifications/unread-count'),
-    refetchInterval: 15000,
+    // Refetch every 60s. React Query deduplicates — both Topbar and MobileHeader
+    // NotificationBell share this subscription, so exactly one HTTP request fires
+    // per interval regardless of how many components subscribe.
+    refetchInterval: 60000,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
   });
 }
 export function useMarkNotificationRead() {
@@ -284,6 +289,23 @@ export interface PaymentLinkInfo {
   amount: string | number;
   status: string;
 }
+// ── Supplier dashboard (PRD-01 §6) ──────────────────────────────────────
+export interface SupplierCatalogItem {
+  id: string;
+  title: string;
+  unit: string;
+  priceEstimate: string | number | null;
+  isActive: boolean;
+  imageUrls: string[];
+  category: { id: string; name: string };
+}
+export function useSupplierCatalog() {
+  return useQuery({
+    queryKey: ['supplier-catalog'],
+    queryFn: () => api<SupplierCatalogItem[]>('/supplier/catalog'),
+  });
+}
+
 export function usePaymentLink(id: string) {
   return useQuery({
     queryKey: ['payment-link', id],

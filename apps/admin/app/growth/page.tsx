@@ -12,10 +12,7 @@ import {
   Download,
   RefreshCw,
 } from 'lucide-react';
-import { api, ApiError, getToken, getRole } from '@/lib/api';
-
-const BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+import { api, ApiError, BASE, getToken, getRole } from '@/lib/api';
 const money = (n: number) => '₹' + Number(n ?? 0).toLocaleString('en-IN');
 
 interface AreaRow {

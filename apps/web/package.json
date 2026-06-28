@@ -4,9 +4,9 @@
   "private": true,
   "description": "Nirmaan web app (Next.js, mobile-first) — Stage 5.",
   "scripts": {
-    "dev": "next dev -p 3002",
+    "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start -p 3002",
+    "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
