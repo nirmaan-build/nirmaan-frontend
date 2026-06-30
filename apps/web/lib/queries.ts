@@ -14,6 +14,21 @@ import type {
   User,
 } from './types';
 
+/**
+ * Coerce a list response into an array. Tolerates endpoints that return a bare
+ * array or wrap it in a pagination envelope (`{ data | items | results: [] }`).
+ */
+function asArray<T>(res: unknown): T[] {
+  if (Array.isArray(res)) return res as T[];
+  if (res && typeof res === 'object') {
+    const obj = res as Record<string, unknown>;
+    for (const key of ['data', 'items', 'results', 'rfqs']) {
+      if (Array.isArray(obj[key])) return obj[key] as T[];
+    }
+  }
+  return [];
+}
+
 const qs = (p: Record<string, string | number | undefined>) => {
   const parts = Object.entries(p)
     .filter(([, v]) => v !== undefined && v !== '')
@@ -79,10 +94,28 @@ export function useRequestUnit() {
       api('/unit-requests', { method: 'POST', body: JSON.stringify(v) }),
   });
 }
+export interface UnitRequestRow {
+  id: string;
+  rawText: string;
+  context: string | null;
+  status: string;
+  resolvedUnit: { id: string; name: string; shortCode: string } | null;
+  createdAt: string;
+}
+export function useMyUnitRequests() {
+  return useQuery({
+    queryKey: ['unit-requests'],
+    queryFn: () => api<UnitRequestRow[]>('/unit-requests'),
+  });
+}
 export function useCategories(locale: string) {
   return useQuery({
     queryKey: ['categories', locale],
     queryFn: () => api<Category[]>(`/categories${qs({ locale })}`),
+    // Always treat cached categories as stale so any admin hide/unhide reflects
+    // on the very next page visit without the user needing to clear cache.
+    staleTime: 0,
+    gcTime: 60_000, // keep in memory for 1 min after last subscriber unmounts
   });
 }
 export function useSuggest(q: string, pincode: string, locale: string) {
@@ -90,7 +123,8 @@ export function useSuggest(q: string, pincode: string, locale: string) {
     queryKey: ['suggest', q, pincode, locale],
     queryFn: () =>
       api<{ suggestions: Suggestion[] }>(`/search/suggest${qs({ q, pincode, locale })}`),
-    enabled: Boolean(pincode),
+    // Don't fire until user has typed ≥2 chars AND has a pincode set.
+    enabled: Boolean(pincode) && q.length >= 2,
   });
 }
 export function useCatalog(category: string | undefined, pincode: string, q?: string) {
@@ -132,6 +166,18 @@ export function useRemoveCartItem() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['cart'] }),
   });
 }
+export function useClearCart() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      // No bulk-delete endpoint — remove all items in parallel.
+      const cart = qc.getQueryData<CartResponse>(['cart']);
+      if (!cart?.items?.length) return;
+      await Promise.all(cart.items.map((it) => api(`/cart/${it.id}`, { method: 'DELETE' })));
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cart'] }),
+  });
+}
 export function useCreateRfq() {
   const qc = useQueryClient();
   return useMutation({
@@ -146,7 +192,7 @@ export function useCreateRfq() {
   });
 }
 export function useMyRfqs() {
-  return useQuery({ queryKey: ['rfqs'], queryFn: () => api<Rfq[]>('/rfqs') });
+  return useQuery({ queryKey: ['rfqs'], queryFn: () => api<unknown>('/rfqs').then(asArray<Rfq>) });
 }
 
 export interface OrderRow {
@@ -303,6 +349,31 @@ export function useSupplierCatalog() {
   return useQuery({
     queryKey: ['supplier-catalog'],
     queryFn: () => api<SupplierCatalogItem[]>('/supplier/catalog'),
+  });
+}
+export function useCreateCatalogItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { categoryId: string; title: string; unitId: string; priceEstimate?: number; imageUrls?: string[] }) =>
+      api<SupplierCatalogItem>('/supplier/catalog', { method: 'POST', body: JSON.stringify(v) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['supplier-catalog'] }),
+  });
+}
+export function useUpdateCatalogItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; title?: string; priceEstimate?: number | null; isActive?: boolean; imageUrls?: string[] }) => {
+      const { id, ...body } = v;
+      return api<SupplierCatalogItem>(`/supplier/catalog/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['supplier-catalog'] }),
+  });
+}
+export function useDeleteCatalogItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/supplier/catalog/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['supplier-catalog'] }),
   });
 }
 

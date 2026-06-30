@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, FolderTree } from 'lucide-react';
+import { Plus, Pencil, Eye, EyeOff, FolderTree } from 'lucide-react';
 import { api, ApiError, getToken } from '@/lib/api';
 import { Modal } from '../components/Modal';
 
@@ -15,6 +15,7 @@ interface Category {
   id: string;
   name: string;
   sortOrder: number;
+  isHidden: boolean;
   iconUrl: string | null;
   coverImageUrl: string | null;
   translations: Translation[];
@@ -147,11 +148,13 @@ export default function CategoriesPage() {
     }
   }
 
-  async function onDelete(cat: Category) {
-    if (!window.confirm(`Delete category "${cat.name}"?`)) return;
+  async function onToggleHide(cat: Category) {
+    const action = cat.isHidden ? 'unhide' : 'hide';
+    const label = cat.isHidden ? 'Restored' : 'Hidden';
+    if (!cat.isHidden && !window.confirm(`Hide “${cat.name}”? It will no longer appear to buyers.`)) return;
     try {
-      await api(`/admin/categories/${cat.id}`, { method: 'DELETE' });
-      toast.success(`Deleted “${cat.name}”`);
+      await api(`/admin/categories/${cat.id}/${action}`, { method: 'PATCH' });
+      toast.success(`${label} “${cat.name}”`);
       await load();
     } catch (err) {
       handleError(err);
@@ -235,15 +238,21 @@ export default function CategoriesPage() {
                   <th>Name (EN)</th>
                   <th>Name (HI)</th>
                   <th>Sort</th>
+                  <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map((cat) => (
-                  <tr key={cat.id}>
+                  <tr key={cat.id} style={{ opacity: cat.isHidden ? 0.55 : 1 }}>
                     <td style={{ fontWeight: 550 }}>{cat.name}</td>
                     <td>{hindi(cat) || <span className="muted">—</span>}</td>
                     <td>{cat.sortOrder}</td>
+                    <td>
+                      <span className={`badge ${cat.isHidden ? 'inactive' : 'active'}`}>
+                        {cat.isHidden ? 'Hidden' : 'Visible'}
+                      </span>
+                    </td>
                     <td>
                       <div className="actions" style={{ justifyContent: 'flex-end' }}>
                         <button className="sm" onClick={() => openEdit(cat)}>
@@ -251,11 +260,11 @@ export default function CategoriesPage() {
                           Edit
                         </button>
                         <button
-                          className="danger sm"
-                          onClick={() => onDelete(cat)}
+                          className={cat.isHidden ? 'primary sm' : 'danger sm'}
+                          onClick={() => onToggleHide(cat)}
                         >
-                          <Trash2 />
-                          Delete
+                          {cat.isHidden ? <Eye /> : <EyeOff />}
+                          {cat.isHidden ? 'Restore' : 'Hide'}
                         </button>
                       </div>
                     </td>

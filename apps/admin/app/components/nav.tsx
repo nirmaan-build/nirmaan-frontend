@@ -12,6 +12,7 @@ import {
   PhoneCall,
   TrendingUp,
   ClipboardList,
+  Shuffle,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -32,6 +33,7 @@ export const NAV: NavItem[] = [
   { href: '/suppliers', label: 'Suppliers', icon: Store },
   { href: '/catalog', label: 'Catalog', icon: PackageSearch },
   { href: '/rfqs', label: 'Requirements', icon: ClipboardList },
+  { href: '/distribution', label: 'Distribution', icon: Shuffle, roles: ['SUPER_ADMIN', 'OPS'] },
   { href: '/callbacks', label: 'Callback Requests', icon: PhoneCall },
   { href: '/disputes', label: 'Disputes', icon: ShieldAlert },
   { href: '/broadcast', label: 'Broadcast', icon: Megaphone },

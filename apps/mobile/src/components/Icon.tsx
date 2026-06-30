@@ -27,6 +27,7 @@ import {
   Search,
   ShieldCheck,
   ShoppingCart,
+  Star,
   Sun,
   Tag,
   Trash2,
@@ -67,6 +68,7 @@ const ICONS = {
   package: Package,
   phone: Phone,
   materials: Hammer,
+  star: Star,
   plus: Plus,
   minus: Minus,
   close: X,
@@ -85,10 +87,12 @@ interface Props {
   size?: number;
   color?: string;
   strokeWidth?: number;
+  /** Fill colour for solid glyphs (e.g. a filled rating star). */
+  fill?: string;
   style?: ViewStyle;
 }
 
-export function Icon({ name, size = 22, color, strokeWidth = 2, style }: Props) {
+export function Icon({ name, size = 22, color, strokeWidth = 2, fill = 'none', style }: Props) {
   const t = useTheme();
   const Cmp = (ICONS[name] ?? Info) as React.ComponentType<any>;
   return (
@@ -96,6 +100,7 @@ export function Icon({ name, size = 22, color, strokeWidth = 2, style }: Props) 
       size={size}
       color={color ?? t.colors.text}
       strokeWidth={strokeWidth}
+      fill={fill}
       style={style}
     />
   );

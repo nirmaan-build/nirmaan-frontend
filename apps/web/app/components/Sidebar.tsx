@@ -7,6 +7,7 @@ import { HardHat, HelpCircle, PanelLeftClose, PanelLeftOpen, Store } from 'lucid
 import { NAV } from '@/lib/nav';
 import { useT } from '@/lib/i18n-client';
 import { getUser } from '@/lib/cookies';
+import { useCart } from '@/lib/queries';
 
 /**
  * Desktop left sidebar (QuickMart-style chrome) — visible only at >= lg.
@@ -18,6 +19,8 @@ export function Sidebar() {
   const t = useT();
   const [collapsed, setCollapsed] = useState(false);
   const user = getUser();
+  const { data: cart } = useCart();
+  const cartCount = new Set((cart?.items ?? []).map((i) => i.catalogItem.title)).size;
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
@@ -43,6 +46,7 @@ export function Sidebar() {
         </div>
         {NAV.map((item) => {
           const Icon = item.icon;
+          const isTruck = item.key === 'truck';
           return (
             <Link
               key={item.key}
@@ -50,7 +54,32 @@ export function Sidebar() {
               className={`sidebar-item${isActive(item.href) ? ' active' : ''}`}
               title={t(item.labelKey)}
             >
-              <Icon size={19} />
+              <span style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
+                <Icon size={19} />
+                {isTruck && cartCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -8,
+                      minWidth: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      background: 'var(--primary)',
+                      color: '#fff',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 3px',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </span>
               <span className="sidebar-label">{t(item.labelKey)}</span>
             </Link>
           );

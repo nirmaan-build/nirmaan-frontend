@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package } from 'lucide-react';
+import { Package, Star } from 'lucide-react';
 import { st } from '@/lib/i18n-server';
 import { money } from '@/lib/format';
 import { SearchBox } from './components/SearchBox';
@@ -17,9 +17,6 @@ export default async function HomePage() {
   const pincode = serverPincode();
   const authed = isAuthed();
 
-  // Categories are semi-static — cache for 5 min at the data layer.
-  // The page stays force-dynamic (user-personalized popular items), but
-  // the categories list won't cause a backend round-trip on every load.
   const categories =
     (await serverApi<Category[]>(`/categories?locale=${locale}`, { revalidate: 300 })) ?? [];
   const popular = pincode
@@ -30,6 +27,7 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Page-level search — hidden on desktop (Topbar has one) */}
       <div className="page-search">
         <SearchBox placeholder={st('home.searchPlaceholder')} />
       </div>
@@ -43,7 +41,7 @@ export default async function HomePage() {
         </div>
       ) : null}
 
-      {/* Categories — horizontal scroller with a View all link (Home only). */}
+      {/* ── Shop by Category — horizontal chip scroller ── */}
       <div className="section-head">
         <h2>{st('home.categories')}</h2>
         {categories.length > 0 ? (
@@ -65,7 +63,7 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* Popular near you — capped at 6, with View all → /popular when there are more. */}
+      {/* ── Popular near you — 2-col grid cards ── */}
       <div className="section-head">
         <h2>{st('home.popularNearYou')}</h2>
         {popularItems.length > POPULAR_LIMIT ? (
@@ -77,18 +75,51 @@ export default async function HomePage() {
       {shownPopular.length === 0 ? (
         <p className="muted">{st('home.noItems')}</p>
       ) : (
-        shownPopular.map((item) => (
-          <div key={item.id} className="card">
-            <strong>{item.title}</strong>
-            <div className="meta">
-              {money(item.priceEstimate)} / {item.unit}
-              {item.supplier ? `  ·  ${item.supplier.businessName}` : ''}
-            </div>
-          </div>
-        ))
+        <div className="popular-grid">
+          {shownPopular.map((item) => {
+            const img = item.imageUrls?.[0];
+            // rating/review fields are optional — backend may not include them yet
+            const rating = (item as any).avgRating as number | null | undefined;
+            const reviewCount = (item as any).reviewCount as number | null | undefined;
+            return (
+              <div key={item.id} className="popular-card">
+                {/* Thumbnail */}
+                <div className="popular-img">
+                  {img ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={img} alt={item.title} />
+                  ) : (
+                    <Package size={32} style={{ color: 'var(--muted)', opacity: 0.35 }} />
+                  )}
+                </div>
+                {/* Info */}
+                <div className="popular-body">
+                  <p className="popular-title">{item.title}</p>
+                  <p className="popular-price">
+                    {money(item.priceEstimate)}
+                    <span className="popular-unit"> / {item.unit}</span>
+                  </p>
+                  {item.supplier ? (
+                    <p className="popular-supplier">{item.supplier.businessName}</p>
+                  ) : null}
+                  {/* Rating row — only shown when data is available */}
+                  {rating != null ? (
+                    <div className="popular-rating">
+                      <Star size={12} fill="currentColor" />
+                      <span>{rating.toFixed(1)}</span>
+                      {reviewCount != null && reviewCount > 0 ? (
+                        <span className="popular-review-count">({reviewCount})</span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
-      {/* My Requirements — client component, only visible when logged in */}
+      {/* ── My Requirements — grid, client-rendered when logged in ── */}
       <MyRequirements />
     </>
   );

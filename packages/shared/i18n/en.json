@@ -219,7 +219,12 @@
     "estimatedValue": "Estimated value",
     "items": "{count} item(s)",
     "sendAsRequirement": "Send as Requirement",
-    "remove": "Remove"
+    "remove": "Remove",
+    "emptyTruck": "Empty your truck",
+    "emptyTruckConfirmTitle": "Empty your truck?",
+    "emptyTruckConfirmBody": "Are you sure you want to empty the whole truck? You will have to add all the items again.",
+    "emptyTruckYes": "Yes, empty it",
+    "emptyTruckNo": "No, keep it"
   },
   "profile": {
     "title": "My Profile",
@@ -261,12 +266,6 @@
     "dark": "Dark",
     "system": "System"
   },
-  "requirements": {
-    "title": "My Requirements",
-    "empty": "You haven't posted any requirements yet",
-    "leads": "{count} supplier(s) notified",
-    "quantity": "{quantity} {unit}"
-  },
   "content": {
     "help": "Help & Support",
     "privacy": "Privacy Policy",
@@ -293,6 +292,42 @@
     "confirmOrder": "Confirm",
     "cancelOrder": "Cancel",
     "orderFrom": "From {buyer}",
-    "orderQty": "{qty} items"
+    "orderQty": "{qty} items",
+    "inventory": "My Inventory",
+    "inventoryEmpty": "No items yet. Add your first product below.",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "itemTitle": "Item name",
+    "itemTitlePlaceholder": "e.g. OPC 53 Grade Cement",
+    "itemCategory": "Category",
+    "itemPrice": "Price estimate (₹)",
+    "itemPricePlaceholder": "Optional",
+    "itemUnit": "Unit",
+    "itemImageUrl": "Image URL (optional)",
+    "itemImageUrlPlaceholder": "https://…",
+    "itemSave": "Save item",
+    "itemSaving": "Saving…",
+    "itemAdded": "Item added",
+    "itemUpdated": "Item updated",
+    "itemDeleted": "Item removed",
+    "itemDeleteConfirm": "Remove this item from your inventory?",
+    "toggleActive": "Set active",
+    "toggleInactive": "Set inactive",
+    "addAnother": "Add another"
+  },
+  "requirements": {
+    "title": "My Requirements",
+    "tabRfqs": "Requirements",
+    "tabUnits": "Unit Requests",
+    "empty": "You haven't posted any requirements yet",
+    "unitsEmpty": "No unit requests yet",
+    "leads": "{count} supplier(s) notified",
+    "quantity": "{quantity} {unit}",
+    "unitStatus": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "MAPPED": "Mapped"
+    }
   }
 }

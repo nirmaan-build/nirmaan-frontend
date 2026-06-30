@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Locale } from '@nirmaan/shared';
 import { LocaleProvider } from '@/lib/i18n-client';
+import { NavHistoryProvider } from '@/lib/navHistory';
 import { initAnalytics, identify } from '@/lib/analytics';
 import { getUser } from '@/lib/cookies';
 
@@ -33,7 +34,9 @@ export function Providers({
 
   return (
     <QueryClientProvider client={client}>
-      <LocaleProvider initialLocale={initialLocale}>{children}</LocaleProvider>
+      <LocaleProvider initialLocale={initialLocale}>
+        <NavHistoryProvider>{children}</NavHistoryProvider>
+      </LocaleProvider>
     </QueryClientProvider>
   );
 }

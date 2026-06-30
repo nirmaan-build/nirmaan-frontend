@@ -35,6 +35,7 @@ function PostRfqForm() {
   const [unitId, setUnitId] = useState('');
   const [newUnit, setNewUnit] = useState('');
   const [unitExistsWarning, setUnitExistsWarning] = useState(false);
+  const [unitFormatError, setUnitFormatError] = useState(false);
   const [pincode, setPincode] = useState(getUser()?.primaryPincode ?? '');
 
   if (!ready) return <p className="muted">{t('common.loading')}</p>;
@@ -68,9 +69,15 @@ function PostRfqForm() {
 
   // Requesting a new unit NEVER blocks the form (PRD-02 §3.8.1 / PRD-03): it
   // just logs the ask; the buyer still picks the closest existing unit.
+  const ALPHA_RE = /^[a-zA-Z\s]+$/;
+
   const requestNewUnit = async () => {
     const raw = newUnit.trim();
     if (!raw) return;
+    if (!ALPHA_RE.test(raw)) {
+      setUnitFormatError(true);
+      return;
+    }
     // Guard: don't accept a name that already exists in the units list.
     const alreadyExists = (units.data ?? []).some(
       (u) => u.name.toLowerCase() === raw.toLowerCase(),
@@ -148,20 +155,38 @@ function PostRfqForm() {
               <label>{t('units.requestNew')}</label>
               <input
                 value={newUnit}
-                onChange={(e) => { setNewUnit(e.target.value); setUnitExistsWarning(false); }}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setNewUnit(v);
+                  setUnitExistsWarning(false);
+                  // Validate on each keystroke so error clears as user types
+                  setUnitFormatError(v.length > 0 && !ALPHA_RE.test(v));
+                }}
                 placeholder={t('units.requestPlaceholder')}
               />
             </div>
             <button
               type="button"
               onClick={requestNewUnit}
-              disabled={!newUnit.trim() || requestUnit.isPending}
+              disabled={!newUnit.trim() || unitFormatError || requestUnit.isPending}
               style={{ alignSelf: 'flex-end' }}
             >
               {t('units.requestCta')}
             </button>
           </div>
-          {unitExistsWarning && (
+          {unitFormatError && (
+            <p style={{
+              margin: '6px 0 0',
+              fontSize: 13,
+              color: 'var(--error, #dc2626)',
+              background: 'var(--error-muted, #fef2f2)',
+              borderRadius: 'var(--r-sm)',
+              padding: '8px 12px',
+            }}>
+              {t('units.lettersOnly') || 'Only letters and spaces are allowed.'}
+            </p>
+          )}
+          {unitExistsWarning && !unitFormatError && (
             <p style={{
               margin: '6px 0 0',
               fontSize: 13,

@@ -49,6 +49,9 @@ export interface CatalogItem {
   priceEstimate: string | number | null;
   imageUrls: string[];
   supplier?: { id: string; businessName: string };
+  /** Optional — present once the backend exposes review aggregates. */
+  rating?: number | null;
+  reviewCount?: number | null;
 }
 
 export interface CatalogSearchResult {

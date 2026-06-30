@@ -21,7 +21,14 @@ export function SearchBox({ placeholder }: { placeholder?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isFetching } = useSuggest(debouncedQ, pincode, locale);
+  // Only fire the suggest API when the user has typed ≥2 chars AND has a pincode.
+  // Passing an empty string triggers a backend call for every keystroke — wasteful.
+  const shouldFetch = debouncedQ.length >= 2 && !!pincode;
+  const { data, isFetching } = useSuggest(
+    shouldFetch ? debouncedQ : '',
+    pincode,
+    locale,
+  );
   const suggestions = data?.suggestions ?? [];
 
   // Click-outside closes the dropdown

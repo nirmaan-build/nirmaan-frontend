@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { MapPin, LogIn, ChevronDown, ArrowLeft, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { SearchBox } from './SearchBox';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 import { AreaSheet } from './AreaSheet';
@@ -62,7 +61,7 @@ export function Topbar() {
   return (
     <>
       <header className="topbar">
-        {/* Sub-page: back button instead of search */}
+        {/* Sub-page: back button; tab-route: brand name */}
         {!isTabRoute ? (
           <button
             className="icon-btn topbar-back"
@@ -72,9 +71,9 @@ export function Topbar() {
             <ArrowLeft size={20} />
           </button>
         ) : (
-          <div className="topbar-search">
-            <SearchBox placeholder={t('home.searchPlaceholder')} />
-          </div>
+          <Link href="/" className="topbar-brand">
+            {t('common.appName')}
+          </Link>
         )}
 
         <div className="topbar-actions">

@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Store, Package, Check, X, Clock } from 'lucide-react';
+import { Store, Package, Check, X, Clock, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthGuard } from '@/lib/useAuthGuard';
 import { useSupplierCatalog, useOrders, useAdvanceOrder } from '@/lib/queries';
@@ -143,6 +144,18 @@ export default function SupplierPage() {
           );
         })
       )}
+
+      {/* ── Manage Inventory link ───────────────────────── */}
+      <Link href="/supplier/inventory" style={{ textDecoration: 'none' }}>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 24, cursor: 'pointer' }}>
+          <ClipboardList size={20} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{t('supplier.inventory')}</p>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>Add, edit, or hide your products</p>
+          </div>
+          <span style={{ color: 'var(--muted)', fontSize: 18 }}>›</span>
+        </div>
+      </Link>
 
       {/* ── My Listings ─────────────────────────────────── */}
       <h2 style={{ marginTop: 32 }}>{t('supplier.listings')}</h2>
